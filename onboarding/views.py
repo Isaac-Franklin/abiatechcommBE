@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from drf_yasg.utils import swagger_auto_schema
+
+from onboarding.utils import resolve_user_profile, serialize_profile
 from .serializers import *
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
@@ -28,10 +30,17 @@ from rest_framework import status
 from .serializers import UserRegistrationSerializer
 import json
 
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 
+@swagger_auto_schema(
+    method='POST',
+    query_serializer=UserRegistrationSerializer,
+    tags=['AUTH'],
+)
 @csrf_exempt
+@api_view(['POST'])
 @require_http_methods(["POST"])
 def UserRegister(request):
     """
@@ -186,7 +195,82 @@ def UserRegister(request):
 
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=LoginSerializer,
+    tags=['AUTH'],
+    responses={
+        200: "Login successful",
+        400: "Invalid request",
+        401: "Invalid credentials",
+    }
+)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def UserLogin(request):
+    serializer = LoginSerializer(data=request.data)
+    print(request.data)
 
+    if not serializer.is_valid():
+        return Response(
+            {"message": "Invalid request data", "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    email = serializer.validated_data['email']
+    password = serializer.validated_data['password']
+
+    try:
+        user = User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        # Prevent user enumeration
+        return Response(
+            {"message": "Invalid email or password"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    user_auth = authenticate(
+        request,
+        username=user.username,
+        password=password
+    )
+
+    if not user_auth:
+        return Response(
+            {"message": "Invalid email or password"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # 🔍 Determine user type
+    user_type, profile = resolve_user_profile(user)
+
+    if not profile:
+        return Response(
+            {"message": "User profile not found"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # 🔐 Generate JWT
+    refresh = RefreshToken.for_user(user)
+
+    response_data = {
+        "status": 200,
+        "message": "Login successful",
+        "user_type": user_type,
+        "token": {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        },
+        "user": {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+        },
+        "profile": serialize_profile(profile),
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 
