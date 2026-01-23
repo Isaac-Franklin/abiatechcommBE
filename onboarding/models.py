@@ -1,7 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+User = get_user_model()
 
 class UserProfile(models.Model):
     """Extended User profile with common fields"""
@@ -20,10 +21,83 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    bio = models.CharField(null=True,blank=True)
+    location = models.CharField(null=True,blank=True)
+    skill = models.CharField(max_length=20, null=True,  blank=True)
     
     def __str__(self):
         return f"{self.user.email} ({self.get_user_type_display()})"
-
+    
+class Certification(models.Model):
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='certifications')
+    
+    title = models.CharField(max_length=200)
+    issuer = models.CharField(max_length=200)
+    issue_date = models.DateField()
+    expiry_date = models.DateField(null=True, blank=True)
+    
+    credential_id = models.CharField(max_length=100, blank=True)
+    credential_url = models.URLField(max_length=500, blank=True)
+    
+    description = models.TextField(blank=True)
+    
+    # Status
+    is_verified = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)
+    
+    # Files
+    certificate_file = models.FileField(upload_to='certifications/', blank=True, null=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-issue_date']
+        verbose_name = 'Certification'
+        verbose_name_plural = 'Certifications'
+    
+    def __str__(self):
+        return f"{self.title} - {self.issuer}"
+    
+    def is_expired(self):
+        """Check if certification is expired"""
+        if self.expiry_date:
+            from django.utils import timezone
+            return timezone.now().date() > self.expiry_date
+        return False
+    
+    def get_duration(self):
+        """Get certification duration in years/months"""
+        if self.expiry_date:
+            months = (self.expiry_date.year - self.issue_date.year) * 12 + (self.expiry_date.month - self.issue_date.month)
+            years = months // 12
+            remaining_months = months % 12
+            
+            if years > 0:
+                return f"{years} year{'s' if years > 1 else ''}"
+            return f"{remaining_months} month{'s' if remaining_months > 1 else ''}"
+        return "No expiry"
+class Skill(models.Model):
+    PROFICIENCY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('expert', 'Expert'),
+    ]
+    
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='skills')
+    name = models.CharField(max_length=100)
+    proficiency_level = models.CharField(max_length=20, choices=PROFICIENCY_CHOICES, default='beginner')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['profile', 'name']  # Prevent duplicate skills per user
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_proficiency_level_display()})"
 
 class MemberProfile(models.Model):
     """Profile for Community Members"""
@@ -58,57 +132,6 @@ class InvestorProfile(models.Model):
         return f"Investor: {self.user.email}"
 
 
-class StartupProfile(models.Model):
-    """Profile for Startups/Founders"""
-    INDUSTRY_CHOICES = [
-        ('fintech', 'FinTech'),
-        ('healthtech', 'HealthTech'),
-        ('edtech', 'EdTech'),
-        ('agritech', 'AgriTech'),
-        ('ecommerce', 'E-commerce'),
-        ('saas', 'SaaS'),
-        ('other', 'Other'),
-    ]
-    
-    STAGE_CHOICES = [
-        ('idea', 'Idea Stage'),
-        ('mvp', 'MVP/Prototype'),
-        ('early', 'Early Stage'),
-        ('growth', 'Growth Stage'),
-        ('scale', 'Scaling'),
-    ]
-    
-    TEAM_SIZE_CHOICES = [
-        ('1-5', '1-5 members'),
-        ('6-10', '6-10 members'),
-        ('11-25', '11-25 members'),
-        ('26-50', '26-50 members'),
-        ('50+', '50+ members'),
-    ]
-    
-    FUNDING_STAGE_CHOICES = [
-        ('bootstrapped', 'Bootstrapped'),
-        ('pre-seed', 'Pre-Seed'),
-        ('seed', 'Seed'),
-        ('series-a', 'Series A'),
-        ('series-b+', 'Series B+'),
-    ]
-    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='startup_profile')
-    company_name = models.CharField(max_length=200)
-    company_website = models.URLField(blank=True)
-    founded_year = models.IntegerField()
-    industry = models.CharField(max_length=20, choices=INDUSTRY_CHOICES)
-    stage = models.CharField(max_length=20, choices=STAGE_CHOICES)
-    team_size = models.CharField(max_length=20, choices=TEAM_SIZE_CHOICES)
-    funding_stage = models.CharField(max_length=20, choices=FUNDING_STAGE_CHOICES)
-    product_description = models.TextField()
-    target_market = models.TextField()
-    revenue_model = models.TextField()
-    current_revenue = models.CharField(max_length=50, blank=True)
-    
-    def __str__(self):
-        return f"Startup: {self.company_name}"
 
 
 class CofounderProfile(models.Model):

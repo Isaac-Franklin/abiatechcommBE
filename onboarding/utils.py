@@ -23,6 +23,5 @@ def resolve_user_profile(user):
 
 
 
-
 def serialize_profile(profile):
     return model_to_dict(profile, exclude=['id', 'user'])

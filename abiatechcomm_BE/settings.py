@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'onboarding.apps.OnboardingConfig',
     'rest_framework',
-    'rest_framework_swagger',
+    'drf-spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
