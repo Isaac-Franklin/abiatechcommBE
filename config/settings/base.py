@@ -116,6 +116,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SWAGGER_SETTINGS = {
+    'TAGS_SORTER': 'alpha'
+}
+
+
+
+SWAGGER_SETTINGS = {
+    'TAGS_SORTER': lambda tags: [
+        "Community User",
+        "Investor User",
+        "Startup User",
+        "Admin User"
+    ]
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
