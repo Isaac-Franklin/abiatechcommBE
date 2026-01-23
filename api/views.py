@@ -218,9 +218,12 @@ def UserRegister(request):
             'success': False,
             'message': str(e)
         }, status=500)
-
-
-
+        
+@swagger_auto_schema(
+    method='get',
+    operation_summary='List groups',
+    tags=['Groups'],
+)
 @api_view(['GET'])
 def list_groups(request):
     """List all public groups with filtering"""

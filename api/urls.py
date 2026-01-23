@@ -11,7 +11,7 @@ urlpatterns = [
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     #===================== DASHBOARD =======================
-    path('dashboard', views.dashboard_stats, name="dashboard"),
+    path('dashboard/', views.dashboard_stats, name="dashboard"),
     
     # ==================== USER PROFILE & SETTINGS ====================
     path('users/settings/profile/', views.update_profile, name='update-profile'),
