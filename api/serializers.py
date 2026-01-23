@@ -870,7 +870,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
-        pass
+        model = Achievement
+        fields = "__all__"
 
 
 class JobDetailSerializer(serializers.ModelSerializer):

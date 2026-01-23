@@ -438,21 +438,17 @@ def dashboard_stats(request):
     except UserActivityStats.DoesNotExist:
         user_points = 0
         points_change_str = "+0"
+    dashboard_stats = {}
+    dashboard_stats["active_members"] = active_members
+    dashboard_stats["job_openings"] = job_openings
+    dashboard_stats["active_startups"] = active_startups
+    dashboard_stats["user_points"] = user_points
+    dashboard_stats["changes"]["members_change"] = members_change_str
+    dashboard_stats["changes"]["jobs_change"] = jobs_change_str
+    dashboard_stats["changes"]["startups_change"] = startups_change_str
+    dashboard_stats["changes"]["points_change"] = points_change_str
     
-    data = {
-        "active_members": active_members,
-        "job_openings": job_openings,
-        "active_startups": active_startups,
-        "user_points": user_points,
-        "changes": {
-            "members_change": members_change_str,
-            "jobs_change": jobs_change_str,
-            "startups_change": startups_change_str,
-            "points_change": points_change_str
-        }
-    }
-    
-    serializer = DashboardStatsSerializer(data)
+    serializer = DashboardStatsSerializer(dashboard_stats)
     
     return Response(serializer.data)
 
