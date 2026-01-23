@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'abiatechcomm_BE.wsgi.application'
+WSGI_APPLICATION = 'abiatechcommBE.wsgi.application'
 
 
 # Database
