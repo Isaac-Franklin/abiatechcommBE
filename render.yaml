@@ -3,7 +3,7 @@ services:
     name: django-backend
     runtime: python
     buildCommand: ./build.sh
-    startCommand: gunicorn abiatechcommBE.wsgi:application
+    startCommand: gunicorn abiatechcomm_BE.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
