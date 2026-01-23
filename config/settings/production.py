@@ -11,4 +11,4 @@ DATABASES = {
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["*"]  # tighten later
+ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com"]  # tighten later
