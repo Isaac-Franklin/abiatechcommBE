@@ -400,83 +400,81 @@ def recent_activities(request):
     serializer = ActivitySerializer(paginated_activities, many=True, context={'request': request})
     return paginator.get_paginated_response(serializer.data)
 
-@extend_schema(
-    tags=['Events']
-)
-class UpcomingEventsView(APIView):
-    """Get upcoming events"""
-    permission_classes = [IsAuthenticated]
-    
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-            OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10)
-        ],
-        responses=GroupEventSerializer(many=True),
-    )
-    def get(self, request):
-        page = request.query_params.get('page', 1)
-        limit = request.query_params.get('limit', 10)
-        
-        try:
-            page = int(page)
-            limit = int(limit)
-        except ValueError:
-            return Response(
-                {"error": "page and limit must be integers"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        if page < 1 or limit < 1:
-            return Response(
-                {"error": "page and limit must be positive integers"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        current_time = now()
-        events = GroupEvent.objects.filter(date__gte=current_time)
-        
-        paginator = Paginator(events, limit)
-        
-        try:
-            events_page = paginator.page(page)
-        except PageNotAnInteger:
-            return Response(
-                {"error": "page parameter must be an integer"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except EmptyPage:
-            return Response(
-                {
-                    "results": [],
-                    "pagination": {
-                        "current_page": page,
-                        "total_pages": paginator.num_pages,
-                        "total_items": paginator.count,
-                        "has_next": False,
-                        "has_previous": paginator.num_pages > 0 and page > 1
-                    }
-                },
-                status=status.HTTP_200_OK
-            )
-        
-        serializer = GroupEventSerializer(events_page, many=True)
-        
-        response_data = {
-            "results": serializer.data,
-            "pagination": {
-                "current_page": page,
-                "total_pages": paginator.num_pages,
-                "total_items": paginator.count,
-                "has_next": events_page.has_next(),
-                "has_previous": events_page.has_previous(),
-                "next_page": events_page.next_page_number() if events_page.has_next() else None,
-                "previous_page": events_page.previous_page_number() if events_page.has_previous() else None
-            }
-        }
-        
-        return Response(response_data, status=status.HTTP_200_OK)
+# Replace the entire UpcomingEventsView class with this function:
 
+@extend_schema(
+    tags=['Events'],
+    parameters=[
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10)
+    ],
+    responses=GroupEventSerializer(many=True),
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def upcoming_events(request):
+    """Get upcoming events"""
+    page = request.query_params.get('page', 1)
+    limit = request.query_params.get('limit', 10)
+    
+    try:
+        page = int(page)
+        limit = int(limit)
+    except ValueError:
+        return Response(
+            {"error": "page and limit must be integers"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if page < 1 or limit < 1:
+        return Response(
+            {"error": "page and limit must be positive integers"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    current_time = now()
+    events = GroupEvent.objects.filter(date__gte=current_time)
+    
+    paginator = Paginator(events, limit)
+    
+    try:
+        events_page = paginator.page(page)
+    except PageNotAnInteger:
+        return Response(
+            {"error": "page parameter must be an integer"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except EmptyPage:
+        return Response(
+            {
+                "results": [],
+                "pagination": {
+                    "current_page": page,
+                    "total_pages": paginator.num_pages,
+                    "total_items": paginator.count,
+                    "has_next": False,
+                    "has_previous": paginator.num_pages > 0 and page > 1
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+    
+    serializer = GroupEventSerializer(events_page, many=True)
+    
+    response_data = {
+        "results": serializer.data,
+        "pagination": {
+            "current_page": page,
+            "total_pages": paginator.num_pages,
+            "total_items": paginator.count,
+            "has_next": events_page.has_next(),
+            "has_previous": events_page.has_previous(),
+            "next_page": events_page.next_page_number() if events_page.has_next() else None,
+            "previous_page": events_page.previous_page_number() if events_page.has_previous() else None
+        }
+    }
+    
+    return Response(response_data, status=status.HTTP_200_OK)
 # ==================== POSTS ====================
 
 @extend_schema(

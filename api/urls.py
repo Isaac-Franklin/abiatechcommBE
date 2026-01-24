@@ -91,7 +91,7 @@ urlpatterns = [
     path('groups/<int:group_id>/chat/messages/', views.group_chat_messages, name='group-chat-messages'),
     
     # Events (General)
-    path('events/upcoming/', views.UpcomingEventsView.as_view(), name='upcoming-events'),
+    path('events/upcoming/', views.upcoming_events, name='upcoming-events'),
     
     # ==================== MARKETPLACE ====================
     path('marketplace/services/', views.list_services, name='list-services'),
