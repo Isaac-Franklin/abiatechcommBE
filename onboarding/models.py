@@ -21,8 +21,8 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    bio = models.CharField(null=True,blank=True)
-    location = models.CharField(null=True,blank=True)
+    bio = models.CharField(null=True,blank=True,max_length=50)
+    location = models.CharField(null=True,blank=True,max_length=50)
     skill = models.CharField(max_length=20, null=True,  blank=True)
     
     def __str__(self):
