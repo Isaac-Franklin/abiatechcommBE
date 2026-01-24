@@ -112,7 +112,6 @@ def api_wrapper(view_func):
     },
     tags=['Authentication'],
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @require_http_methods(["POST"])
@@ -260,7 +259,6 @@ def UserRegister(request):
     },
     tags=['Authentication'],
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @csrf_exempt
@@ -332,7 +330,6 @@ def UserLogin(request):
     responses=DashboardStatsSerializer,
     tags=['Dashboard']
 )
-@api_wrapper
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
@@ -425,7 +422,6 @@ def dashboard_stats(request):
     responses=ActivitySerializer(many=True),
     tags=['Dashboard']
 )
-@api_wrapper
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def recent_activities(request):
@@ -448,7 +444,6 @@ def recent_activities(request):
     ],
     responses=GroupEventSerializer(many=True),
 )
-@api_wrapper
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def upcoming_events(request):
@@ -525,7 +520,6 @@ def upcoming_events(request):
     },
     tags=['Posts']
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 
@@ -564,7 +558,7 @@ def add_post(request):
     },
     tags=['Posts']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def like_post(request, post_id):
@@ -598,7 +592,6 @@ def like_post(request, post_id):
     },
     tags=['Posts']
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def unlike_post(request, post_id):
@@ -622,7 +615,6 @@ def unlike_post(request, post_id):
     responses=PostCommentSerializer(many=True),
     tags=['Posts']
 )
-@api_wrapper
 @api_view(['GET'])
 def get_post_comments(request, post_id):
     """Get comments for a post"""
@@ -661,7 +653,6 @@ def get_post_comments(request, post_id):
     },
     tags=['Posts']
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_comment(request, post_id):
@@ -706,7 +697,6 @@ def create_comment(request, post_id):
     },
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
 def update_startup(request, id):
@@ -738,7 +728,6 @@ def update_startup(request, id):
     },
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['POST'])
 def contact_startup(request, id):
     """Send inquiry to startup"""
@@ -776,7 +765,6 @@ def contact_startup(request, id):
     },
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_startup_profile(request):
@@ -802,7 +790,6 @@ def create_startup_profile(request):
     },
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_startup_profile(request):
@@ -820,7 +807,6 @@ def update_startup_profile(request):
     responses=StartupProfileSerializer,
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_startup_profile(request):
@@ -834,7 +820,6 @@ def get_startup_profile(request):
     responses=StartupSerializer(many=True),
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['GET'])
 def list_startups(request):
     """List all startups"""
@@ -850,7 +835,6 @@ def list_startups(request):
     responses=StartupSerializer,
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['GET'])
 def get_startup(request, id):
     """Get startup details"""
@@ -867,7 +851,6 @@ def get_startup(request, id):
     },
     tags=['Startups']
 )
-@api_wrapper
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def create_startup(request):
@@ -884,8 +867,7 @@ def create_startup(request):
     methods=['GET'],
     responses=EnrolledCourseSerializer(many=True),
     tags=['Learning']
-)
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def enrolled_courses(request):
@@ -908,7 +890,7 @@ def enrolled_courses(request):
     responses=CourseSerializer(many=True),
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def available_courses(request):
     """Get available courses"""
@@ -957,7 +939,7 @@ def available_courses(request):
     },
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def enroll_course(request, course_id):
@@ -998,7 +980,7 @@ def enroll_course(request, course_id):
     responses=EnrolledCourseSerializer,
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def course_progress(request, course_id):
@@ -1017,7 +999,7 @@ def course_progress(request, course_id):
     responses=EnrolledCourseSerializer,
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_progress(request, course_id):
@@ -1055,7 +1037,7 @@ def update_progress(request, course_id):
     responses=CertificateSerializer(many=True),
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_certificates(request):
@@ -1069,7 +1051,7 @@ def my_certificates(request):
     responses=StudyGroupSerializer(many=True),
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_study_groups(request):
@@ -1083,7 +1065,7 @@ def my_study_groups(request):
     responses=ChallengeSerializer(many=True),
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def active_challenges(request):
     """Get active challenges"""
@@ -1105,7 +1087,7 @@ def active_challenges(request):
     },
     tags=['Learning']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def join_challenge(request, challenge_id):
@@ -1138,7 +1120,7 @@ def join_challenge(request, challenge_id):
     responses=OpenApiTypes.OBJECT,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
@@ -1165,7 +1147,7 @@ def get_user_profile(request):
     responses=OpenApiTypes.OBJECT,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
@@ -1204,7 +1186,7 @@ def update_user_profile(request):
     responses=OpenApiTypes.OBJECT,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_avatar(request):
@@ -1230,7 +1212,7 @@ def update_avatar(request):
     responses=OpenApiTypes.OBJECT,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_skills(request):
@@ -1251,7 +1233,7 @@ def get_user_skills(request):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_skill(request):
@@ -1274,7 +1256,7 @@ def create_skill(request):
     responses=OpenApiTypes.OBJECT,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_skills(request):
@@ -1297,7 +1279,7 @@ def update_skills(request):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_skill(request, skill_id):
@@ -1311,7 +1293,7 @@ def delete_skill(request, skill_id):
     responses=CertificationSerializer(many=True),
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_certifications(request):
@@ -1330,7 +1312,7 @@ def get_certifications(request):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_certification(request):
@@ -1354,7 +1336,7 @@ def create_certification(request):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_certification(request, cert_id):
@@ -1372,7 +1354,7 @@ def delete_certification(request, cert_id):
     responses=ProjectSerializer(many=True),
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_projects(request):
@@ -1391,7 +1373,7 @@ def get_projects(request):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_project(request):
@@ -1414,7 +1396,7 @@ def create_project(request):
     responses=ProjectSerializer,
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_project(request, project_id):
@@ -1440,7 +1422,7 @@ def update_project(request, project_id):
     },
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_project(request, project_id):
@@ -1466,7 +1448,7 @@ def delete_project(request, project_id):
     responses=GroupSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def list_groups(request):
     """List all public groups"""
@@ -1515,7 +1497,7 @@ def list_groups(request):
     responses=GroupSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_groups(request):
@@ -1561,7 +1543,7 @@ def my_groups(request):
     responses=GroupSerializer,
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def group_detail(request, group_id):
     """Get group details"""
@@ -1591,7 +1573,7 @@ def group_detail(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group(request):
@@ -1629,7 +1611,7 @@ def create_group(request):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def join_group(request, group_id):
@@ -1671,7 +1653,7 @@ def join_group(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def leave_group(request, group_id):
@@ -1702,7 +1684,7 @@ def leave_group(request, group_id):
     responses=GroupSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def suggested_groups(request):
@@ -1731,7 +1713,7 @@ def suggested_groups(request):
     responses=GroupDiscussionSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_discussions(request, group_id):
@@ -1774,7 +1756,7 @@ def group_discussions(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_discussion(request, group_id):
@@ -1800,7 +1782,7 @@ def create_discussion(request, group_id):
     responses=GroupEventSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_events(request, group_id):
@@ -1827,7 +1809,7 @@ def group_events(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 
@@ -1856,7 +1838,7 @@ def create_event(request, group_id):
     responses=GroupChatMessageSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_chat_messages(request, group_id):
@@ -1901,7 +1883,7 @@ def group_chat_messages(request, group_id):
     responses=JobListSerializer(many=True),
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def list_jobs(request):
     """List jobs with filters"""
@@ -1989,7 +1971,7 @@ def list_jobs(request):
     responses=JobDetailSerializer,
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def job_detail(request, job_id):
     """Get job details"""
@@ -2014,7 +1996,7 @@ def job_detail(request, job_id):
     },
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['POST'])
 def apply_job(request, job_id):
     """Apply for a job"""
@@ -2062,7 +2044,7 @@ def apply_job(request, job_id):
     responses=JobApplicationSerializer(many=True),
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_applications(request):
@@ -2096,7 +2078,7 @@ def my_applications(request):
     responses=JobApplicationSerializer,
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_application_detail(request, application_id):
@@ -2114,7 +2096,7 @@ def get_application_detail(request, application_id):
     responses=JobListSerializer(many=True),
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_bookmarked_jobs(request):
@@ -2156,7 +2138,7 @@ def get_bookmarked_jobs(request):
     },
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_job_bookmark(request, job_id):
@@ -2202,7 +2184,7 @@ def toggle_job_bookmark(request, job_id):
     responses=JobListSerializer(many=True),
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def bookmarked_jobs(request):
@@ -2230,7 +2212,7 @@ def bookmarked_jobs(request):
     responses=ServiceSerializer(many=True),
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def list_services(request):
     """List marketplace services"""
@@ -2286,7 +2268,7 @@ def list_services(request):
     responses=ServiceSerializer,
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def service_detail(request, service_id):
     """Get service details"""
@@ -2303,7 +2285,7 @@ def service_detail(request, service_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_service(request):
@@ -2322,7 +2304,7 @@ def create_service(request):
     responses=ServiceReviewSerializer(many=True),
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def service_reviews(request, service_id):
     """Get service reviews"""
@@ -2343,7 +2325,7 @@ def service_reviews(request, service_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_review(request, service_id):
@@ -2373,7 +2355,7 @@ def create_review(request, service_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def contact_service(request, service_id):
@@ -2400,7 +2382,7 @@ def contact_service(request, service_id):
     responses=UserProfileSerializer,
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
 @permission_classes([IsAuthenticated])
@@ -2420,7 +2402,7 @@ def update_profile(request):
     responses=NotificationSettingsSerializer,
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_notifications(request):
@@ -2439,7 +2421,7 @@ def update_notifications(request):
     responses=PrivacySettingsSerializer,
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_privacy(request):
@@ -2461,7 +2443,7 @@ def update_privacy(request):
     },
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
@@ -2483,7 +2465,7 @@ def change_password(request):
     },
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
@@ -2501,7 +2483,7 @@ def delete_account(request):
     responses=AchievementSerializer(many=True),
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def user_achievements(request, id):
     """Get user achievements"""
@@ -2517,7 +2499,7 @@ def user_achievements(request, id):
     responses=GroupSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def suggested_groups(request):
@@ -2544,7 +2526,7 @@ def suggested_groups(request):
     responses=GroupSerializer,
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def group_detail(request, group_id):
     """Get detailed information about a group"""
@@ -2588,7 +2570,7 @@ def group_detail(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def leave_group(request, group_id):
@@ -2623,7 +2605,7 @@ def leave_group(request, group_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_service(request):
@@ -2643,7 +2625,7 @@ def create_service(request):
     },
     tags=['Startups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def create_startup(request):
@@ -2660,7 +2642,7 @@ def create_startup(request):
     responses=NotificationSettingsSerializer,
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_notifications(request):
@@ -2682,7 +2664,7 @@ def update_notifications(request):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group(request):
@@ -2727,7 +2709,7 @@ def create_group(request):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def join_group(request, group_id):
@@ -2767,7 +2749,7 @@ def join_group(request, group_id):
     responses=PrivacySettingsSerializer,
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_privacy(request):
@@ -2801,7 +2783,7 @@ def update_privacy(request):
     },
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
@@ -2829,7 +2811,7 @@ def change_password(request):
     },
     tags=['Settings']
 )
-@api_wrapper
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
@@ -2847,7 +2829,7 @@ def delete_account(request):
     responses=AchievementSerializer(many=True),
     tags=['Profiles']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def user_achievements(request, id):
     """Get achievements earned by a user"""
@@ -2868,7 +2850,7 @@ def user_achievements(request, id):
     responses=GroupDiscussionSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_discussions(request, group_id):
@@ -2912,7 +2894,7 @@ def group_discussions(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_discussion(request, group_id):
@@ -2941,7 +2923,7 @@ def create_discussion(request, group_id):
     responses=GroupEventSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_events(request, group_id):
@@ -2969,7 +2951,7 @@ def group_events(request, group_id):
     },
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_event(request, group_id):
@@ -3000,7 +2982,7 @@ def create_event(request, group_id):
     responses=GroupChatMessageSerializer(many=True),
     tags=['Groups']
 )
-@api_wrapper
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_chat_messages(request, group_id):
@@ -3047,7 +3029,7 @@ def group_chat_messages(request, group_id):
     responses=ServiceSerializer(many=True),
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def list_services(request):
     """Get marketplace services with filters"""
@@ -3103,7 +3085,7 @@ def list_services(request):
     responses=ServiceSerializer,
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def service_detail(request, service_id):
     """Get detailed information about a service"""
@@ -3119,7 +3101,7 @@ def service_detail(request, service_id):
     responses=ServiceReviewSerializer(many=True),
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def service_reviews(request, service_id):
     """Get reviews for a service"""
@@ -3140,7 +3122,7 @@ def service_reviews(request, service_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_review(request, service_id):
@@ -3176,7 +3158,7 @@ def create_review(request, service_id):
     },
     tags=['Marketplace']
 )
-@api_wrapper
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def contact_service(request, service_id):
@@ -3210,7 +3192,7 @@ def contact_service(request, service_id):
     responses=JobListSerializer(many=True),
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def list_jobs(request):
     """Get job listings with filters"""
@@ -3304,7 +3286,7 @@ def list_jobs(request):
     responses=JobDetailSerializer,
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['GET'])
 def job_detail(request, job_id):
     """Get detailed information about a job"""
@@ -3335,7 +3317,7 @@ def job_detail(request, job_id):
     },
     tags=['Jobs']
 )
-@api_wrapper
+
 @api_view(['POST'])
 def apply_job(request, job_id):
     """Submit job application with resume and cover letter"""
