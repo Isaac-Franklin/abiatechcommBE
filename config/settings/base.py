@@ -121,15 +121,21 @@ SWAGGER_SETTINGS = {
 
 
 
-SWAGGER_SETTINGS = {
-    'TAGS_SORTER': lambda tags: [
-        "Community User",
-        "Investor User",
-        "Startup User",
-        "Admin User"
-    ]
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Abiatechcomm API',
+    'DESCRIPTION': 'API documentation for Abiatechcomm',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SORT_OPERATIONS': False,
+    'TAGS': [
+        {"name": "Community User", "description": "Operations for community users"},
+        {"name": "Investor User", "description": "Operations for investor users"},
+        {"name": "Startup User", "description": "Operations for startup users"},
+        {"name": "Admin User", "description": "Operations for admin users"}
+    ],
 }
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
