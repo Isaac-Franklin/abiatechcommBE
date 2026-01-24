@@ -401,18 +401,19 @@ def recent_activities(request):
     return paginator.get_paginated_response(serializer.data)
 
 @extend_schema(
+    tags=['Events']
+)
+class UpcomingEventsView(APIView):
+    """Get upcoming events"""
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
         parameters=[
             OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
             OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10)
         ],
         responses=GroupEventSerializer(many=True),
-        tags=['Events']
     )
-class UpcomingEventsView(APIView):
-    """Get upcoming events"""
-    permission_classes = [IsAuthenticated]
-    
-    
     def get(self, request):
         page = request.query_params.get('page', 1)
         limit = request.query_params.get('limit', 10)
