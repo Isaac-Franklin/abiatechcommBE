@@ -77,11 +77,24 @@ def api_wrapper(view_func):
                 "message": str(e)
             }, status=500)
 
-    # Transfer DRF metadata to the wrapper so drf-spectacular can see it
+    # Transfer ALL DRF and drf-spectacular attributes to the wrapper
+    # This ensures schema generation works properly
+    for attr in dir(view_func):
+        if not attr.startswith('_'):
+            try:
+                setattr(_wrapped_view, attr, getattr(view_func, attr))
+            except (AttributeError, TypeError):
+                pass
+    
+    # Explicitly copy critical attributes that might be missed
     if hasattr(view_func, 'cls'):
         _wrapped_view.cls = view_func.cls
     if hasattr(view_func, 'schema'):
         _wrapped_view.schema = view_func.schema
+    if hasattr(view_func, 'kwargs'):
+        _wrapped_view.kwargs = view_func.kwargs
+    if hasattr(view_func, 'actions'):
+        _wrapped_view.actions = view_func.actions
 
     return _wrapped_view
 # ==================== AUTHENTICATION ====================
