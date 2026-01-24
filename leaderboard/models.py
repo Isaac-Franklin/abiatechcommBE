@@ -244,12 +244,46 @@ class PointTransaction(models.Model):
                 return f"{minutes} minutes"
         return "No expiry"
     
+# In leaderboard/models.py
 class UserActivityStats(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='activity_stats')
+    
+    # Activity counts
     posts_count = models.IntegerField(default=0)
     comments_count = models.IntegerField(default=0)
     helps_count = models.IntegerField(default=0)
+    
+    # Points tracking (ADD THESE)
+    total_points = models.IntegerField(default=0)
+    points_last_week = models.IntegerField(default=0)
+    points_last_month = models.IntegerField(default=0)
+    
+    # Achievements
+    achievements_count = models.IntegerField(default=0)
+    
+    # Timestamps
+    last_activity_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "User Activity Stats"
+        verbose_name_plural = "User Activity Stats"
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.total_points} points"
+    
+    def calculate_total_points(self):
+        """Calculate total points based on activities"""
+        # Basic point system
+        points = (
+            self.posts_count * 10 +      # 10 points per post
+            self.comments_count * 5 +    # 5 points per comment
+            self.helps_count * 15        # 15 points per help
+        )
+        self.total_points = points
+        self.save()
+        return points
     
     
 class UserSettings(models.Model):

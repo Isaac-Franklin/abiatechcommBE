@@ -23,7 +23,69 @@ class Startup(models.Model):
     logo = models.ImageField(upload_to="startup_logos/", blank=True, null=True)
     founded_date = models.DateField()
     location = models.CharField(max_length=200)
-
+    is_active = models.BooleanField(default=True)
+    
+    # Status choices
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('archived', 'Archived'),
+    ]
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='active'
+    )
+    
+    # Tracking
+    views_count = models.IntegerField(default=0)
+    contact_count = models.IntegerField(default=0)
+    
+    # Social/Contact
+    linkedin_url = models.URLField(blank=True)
+    twitter_url = models.URLField(blank=True)
+    crunchbase_url = models.URLField(blank=True)
+    
+    # Funding details
+    total_funding = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Total funding raised in USD"
+    )
+    last_funding_round = models.CharField(max_length=100, blank=True)
+    last_funding_date = models.DateField(null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_active']),
+            models.Index(fields=['stage']),
+            models.Index(fields=['category']),
+        ]
+    
+    def __str__(self):
+        return self.name
+    
+    def increment_views(self):
+        """Increment view count"""
+        self.views_count += 1
+        self.save()
+    
+    def increment_contacts(self):
+        """Increment contact count"""
+        self.contact_count += 1
+        self.save()
+    
+    @property
+    def is_seeking_investment(self):
+        """Check if startup is seeking investment"""
+        return self.stage in ['idea', 'mvp', 'seed']
     def __str__(self):
         return self.name
 

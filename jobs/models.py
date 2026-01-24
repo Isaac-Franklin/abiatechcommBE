@@ -41,7 +41,7 @@ class Job(models.Model):
     salary_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     salary_currency = models.CharField(max_length=10, default='₦')
     is_salary_negotiable = models.BooleanField(default=False)
-    
+    created_at = models.DateTimeField(auto_add_now=True)
     # Description
     description = models.TextField()
     requirements = models.TextField()
@@ -55,6 +55,22 @@ class Job(models.Model):
     # Contact
     apply_email = models.EmailField(blank=True)
     apply_url = models.URLField(blank=True)
+    # Status choices
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('filled', 'Position Filled'),
+        ('closed', 'Closed'),
+        ('expired', 'Expired'),
+    ]
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='active'
+    )
+    
+    # Views tracking
+    views_count = models.IntegerField(default=0)
+    applications_count = models.IntegerField(default=0)
     
     # Relations
     posted_by = models.ForeignKey(
@@ -116,6 +132,23 @@ class Job(models.Model):
         if self.deadline:
             return timezone.now().date() > self.deadline
         return False
+    def mark_as_expired(self):
+        """Mark job as expired"""
+        if self.is_expired and self.status == 'active':
+            self.status = 'expired'
+            self.is_active = False
+            self.save()
+    
+    def increment_views(self):
+        """Increment view count"""
+        self.views_count += 1
+        self.save()
+    
+    def increment_applications(self):
+        """Increment application count"""
+        self.applications_count += 1
+        self.save()
+        
 
 class JobBookmark(models.Model):
     """User bookmarks for jobs"""
