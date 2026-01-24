@@ -70,6 +70,6 @@ SWAGGER_SETTINGS = {
     },
 }
 
-import os
-# SECRET_KEY = os.getenv("SECRET_KEY")
+
+SECRET_KEY = 'django-insecure-wtje&0@(nr)qp#6)o33$ssiu74b*39ekqj&yu_-9x-1x#&gv&4'
 

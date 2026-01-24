@@ -1,7 +1,7 @@
 # startups/models.py
 from django.contrib.auth import get_user_model
 from django.db import models
-
+from django.utils import timezone
 User = get_user_model()
 
 class Startup(models.Model):
@@ -58,7 +58,7 @@ class Startup(models.Model):
     last_funding_date = models.DateField(null=True, blank=True)
     
     # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:

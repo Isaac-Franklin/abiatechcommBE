@@ -41,7 +41,7 @@ class Job(models.Model):
     salary_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     salary_currency = models.CharField(max_length=10, default='₦')
     is_salary_negotiable = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_add_now=True)
+    created_at = models.DateTimeField(default=timezone.now)
     # Description
     description = models.TextField()
     requirements = models.TextField()

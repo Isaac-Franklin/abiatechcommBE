@@ -263,7 +263,7 @@ class UserActivityStats(models.Model):
     
     # Timestamps
     last_activity_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
