@@ -67,15 +67,22 @@ def api_wrapper(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         try:
-            # Execute your view logic
-            response = view_func(request, *args, **kwargs)
-            return response
+            return view_func(request, *args, **kwargs)
         except Exception as e:
-            # Handle errors globally here
+            # log the traceback to your terminal so you can actually debug
+            import traceback
+            traceback.print_exc() 
             return Response({
                 "success": False,
                 "message": str(e)
             }, status=500)
+
+    # Transfer DRF metadata to the wrapper so drf-spectacular can see it
+    if hasattr(view_func, 'cls'):
+        _wrapped_view.cls = view_func.cls
+    if hasattr(view_func, 'schema'):
+        _wrapped_view.schema = view_func.schema
+
     return _wrapped_view
 # ==================== AUTHENTICATION ====================
 
