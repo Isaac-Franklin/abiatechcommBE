@@ -8,7 +8,7 @@ DATABASES = {
         ssl_require=True,
     )
 }
-
+ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com"]
 DEBUG =False
 
 STATIC_URL ="/static/"
