@@ -115,11 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SWAGGER_SETTINGS = {
-    'TAGS_SORTER': 'alpha'
-}
-
-
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Abiatechcomm API',
