@@ -50,7 +50,7 @@ from marketplace.models import Service, ServiceContact, ServiceReview
 from groups.models import GroupEvent
 from community.models import Post, PostLike, PostComment, PostShare, Tag, Activity, PostTag, Project
 import json
-
+from functools import wraps
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
@@ -62,7 +62,21 @@ def is_startup_owner(user, startup):
         return startup.user == user
     except:
         return False
-
+    
+def api_wrapper(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        try:
+            # Execute your view logic
+            response = view_func(request, *args, **kwargs)
+            return response
+        except Exception as e:
+            # Handle errors globally here
+            return Response({
+                "success": False,
+                "message": str(e)
+            }, status=500)
+    return _wrapped_view
 # ==================== AUTHENTICATION ====================
 
 @extend_schema(
@@ -82,6 +96,7 @@ def is_startup_owner(user, startup):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @require_http_methods(["POST"])
+@api_wrapper
 def UserRegister(request):
     """User registration endpoint"""
     try:
@@ -228,6 +243,7 @@ def UserRegister(request):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@api_wrapper
 def UserLogin(request):
     """User login endpoint"""
     serializer = LoginSerializer(data=request.data)
@@ -298,6 +314,7 @@ def UserLogin(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def dashboard_stats(request):
     """Get dashboard statistics"""
     now = timezone.now()
@@ -390,6 +407,7 @@ def dashboard_stats(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def recent_activities(request):
     """Get recent activities for current user"""
     activities = Activity.objects.filter(user=request.user).order_by('-created_at')
@@ -412,6 +430,7 @@ def recent_activities(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def upcoming_events(request):
     """Get upcoming events"""
     page = request.query_params.get('page', 1)
@@ -488,6 +507,7 @@ def upcoming_events(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def add_post(request):
     """Create a new post"""
     content = request.data.get('content')
@@ -525,6 +545,7 @@ def add_post(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def like_post(request, post_id):
     """Like or unlike a post"""
     post = get_object_or_404(Post, id=post_id)
@@ -558,6 +579,7 @@ def like_post(request, post_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def unlike_post(request, post_id):
     """Unlike a post"""
     post = get_object_or_404(Post, id=post_id)
@@ -619,6 +641,7 @@ def get_post_comments(request, post_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_comment(request, post_id):
     """Create a comment on a post"""
     post = get_object_or_404(Post, id=post_id)
@@ -663,6 +686,7 @@ def create_comment(request, post_id):
 )
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
+@api_wrapper
 def update_startup(request, id):
     """Update startup information"""
     startup = get_object_or_404(Startup, id=id)
@@ -731,6 +755,7 @@ def contact_startup(request, id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_startup_profile(request):
     """Create startup profile"""
     if hasattr(request.user, 'startup_profile'):
@@ -773,6 +798,7 @@ def update_startup_profile(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_startup_profile(request):
     """Get user's startup profile"""
     profile = get_object_or_404(StartupProfile, user=request.user)
@@ -834,6 +860,7 @@ def create_startup(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def enrolled_courses(request):
     """Get enrolled courses"""
     enrollments = CourseEnrollment.objects.filter(
@@ -855,6 +882,7 @@ def enrolled_courses(request):
     tags=['Learning']
 )
 @api_view(['GET'])
+@api_wrapper
 def available_courses(request):
     """Get available courses"""
     courses = Course.objects.all()
@@ -903,6 +931,7 @@ def available_courses(request):
     tags=['Learning']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def enroll_course(request, course_id):
     """Enroll in a course"""
@@ -943,6 +972,7 @@ def enroll_course(request, course_id):
     tags=['Learning']
 )
 @api_view(['GET'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def course_progress(request, course_id):
     """Get course progress"""
@@ -961,6 +991,7 @@ def course_progress(request, course_id):
     tags=['Learning']
 )
 @api_view(['PATCH'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def update_progress(request, course_id):
     """Update course progress"""
@@ -998,6 +1029,7 @@ def update_progress(request, course_id):
     tags=['Learning']
 )
 @api_view(['GET'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def my_certificates(request):
     """Get user certificates"""
@@ -1011,6 +1043,7 @@ def my_certificates(request):
     tags=['Learning']
 )
 @api_view(['GET'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def my_study_groups(request):
     """Get user's study groups"""
@@ -1024,6 +1057,7 @@ def my_study_groups(request):
     tags=['Learning']
 )
 @api_view(['GET'])
+@api_wrapper
 def active_challenges(request):
     """Get active challenges"""
     challenges = Challenge.objects.filter(deadline__gte=timezone.now()).order_by('deadline')
@@ -1046,6 +1080,7 @@ def active_challenges(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def join_challenge(request, challenge_id):
     """Join a challenge"""
     challenge = get_object_or_404(Challenge, id=challenge_id, deadline__gte=timezone.now())
@@ -1078,6 +1113,7 @@ def join_challenge(request, challenge_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_user_profile(request):
     """Get user profile"""
     user_type, profile = resolve_user_profile(request.user)
@@ -1103,6 +1139,7 @@ def get_user_profile(request):
     tags=['Profiles']
 )
 @api_view(['PATCH'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
     """Update user profile"""
@@ -1141,6 +1178,7 @@ def update_user_profile(request):
     tags=['Profiles']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def update_avatar(request):
     """Update user avatar"""
@@ -1166,6 +1204,7 @@ def update_avatar(request):
     tags=['Profiles']
 )
 @api_view(['GET'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def get_user_skills(request):
     """Get user skills"""
@@ -1186,6 +1225,7 @@ def get_user_skills(request):
     tags=['Profiles']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def create_skill(request):
     """Create skill"""
@@ -1209,6 +1249,7 @@ def create_skill(request):
 )
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_skills(request):
     """Update skills"""
     try:
@@ -1231,6 +1272,7 @@ def update_skills(request):
 )
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def delete_skill(request, skill_id):
     """Delete skill"""
     skill = get_object_or_404(Skill, id=skill_id, profile__user=request.user)
@@ -1244,6 +1286,7 @@ def delete_skill(request, skill_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_certifications(request):
     """Get certifications"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1262,6 +1305,7 @@ def get_certifications(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_certification(request):
     """Create certification"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1285,6 +1329,7 @@ def create_certification(request):
 )
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def delete_certification(request, cert_id):
     """Delete certification"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1302,6 +1347,7 @@ def delete_certification(request, cert_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_projects(request):
     """Get projects"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1320,6 +1366,7 @@ def get_projects(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_project(request):
     """Create project"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1342,6 +1389,7 @@ def create_project(request):
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_project(request, project_id):
     """Update project"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1367,6 +1415,7 @@ def update_project(request, project_id):
 )
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def delete_project(request, project_id):
     """Delete project"""
     profile = get_object_or_404(UserProfile, user=request.user)
@@ -1391,6 +1440,7 @@ def delete_project(request, project_id):
     tags=['Groups']
 )
 @api_view(['GET'])
+@api_wrapper
 def list_groups(request):
     """List all public groups"""
     groups = Group.objects.filter(
@@ -1440,6 +1490,7 @@ def list_groups(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def my_groups(request):
     """Get user's groups"""
     user_groups = Group.objects.filter(
@@ -1484,6 +1535,7 @@ def my_groups(request):
     tags=['Groups']
 )
 @api_view(['GET'])
+@api_wrapper
 def group_detail(request, group_id):
     """Get group details"""
     group = get_object_or_404(Group, id=group_id)
@@ -1514,6 +1566,7 @@ def group_detail(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_group(request):
     """Create a group"""
     serializer = GroupSerializer(
@@ -1551,6 +1604,7 @@ def create_group(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def join_group(request, group_id):
     """Join a group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1592,6 +1646,7 @@ def join_group(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def leave_group(request, group_id):
     """Leave a group"""
     group = get_object_or_404(Group, id=group_id)
@@ -1622,6 +1677,7 @@ def leave_group(request, group_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def suggested_groups(request):
     """Get suggested groups"""
     user_categories = Group.objects.filter(
@@ -1650,6 +1706,7 @@ def suggested_groups(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_discussions(request, group_id):
     """Get group discussions"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1692,6 +1749,7 @@ def group_discussions(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_discussion(request, group_id):
     """Create group discussion"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1717,6 +1775,7 @@ def create_discussion(request, group_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_events(request, group_id):
     """Get group events"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1743,6 +1802,7 @@ def group_events(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_event(request, group_id):
     """Create group event"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1770,6 +1830,7 @@ def create_event(request, group_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_chat_messages(request, group_id):
     """Get group chat messages"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1813,6 +1874,7 @@ def group_chat_messages(request, group_id):
     tags=['Jobs']
 )
 @api_view(['GET'])
+@api_wrapper
 def list_jobs(request):
     """List jobs with filters"""
     jobs = Job.objects.filter(is_active=True)
@@ -1900,6 +1962,7 @@ def list_jobs(request):
     tags=['Jobs']
 )
 @api_view(['GET'])
+@api_wrapper
 def job_detail(request, job_id):
     """Get job details"""
     job = get_object_or_404(Job, id=job_id, is_active=True)
@@ -1924,6 +1987,7 @@ def job_detail(request, job_id):
     tags=['Jobs']
 )
 @api_view(['POST'])
+@api_wrapper
 def apply_job(request, job_id):
     """Apply for a job"""
     job = get_object_or_404(Job, id=job_id, is_active=True)
@@ -1972,6 +2036,7 @@ def apply_job(request, job_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def my_applications(request):
     """Get user's job applications"""
     applications = JobApplication.objects.filter(user=request.user).order_by('-applied_at')
@@ -2005,6 +2070,7 @@ def my_applications(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_application_detail(request, application_id):
     """Get application details"""
     application = get_object_or_404(JobApplication, id=application_id, user=request.user)
@@ -2022,6 +2088,7 @@ def get_application_detail(request, application_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def get_bookmarked_jobs(request):
     """Get bookmarked jobs"""
     bookmarked_jobs = Job.objects.filter(
@@ -2063,6 +2130,7 @@ def get_bookmarked_jobs(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def toggle_job_bookmark(request, job_id):
     """Toggle job bookmark"""
     job = get_object_or_404(Job, id=job_id, is_active=True)
@@ -2108,6 +2176,7 @@ def toggle_job_bookmark(request, job_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def bookmarked_jobs(request):
     """Get bookmarked jobs (simple list)"""
     bookmarked_jobs = Job.objects.filter(
@@ -2134,6 +2203,7 @@ def bookmarked_jobs(request):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def list_services(request):
     """List marketplace services"""
     services = Service.objects.all()
@@ -2189,6 +2259,7 @@ def list_services(request):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def service_detail(request, service_id):
     """Get service details"""
     service = get_object_or_404(Service, id=service_id)
@@ -2205,6 +2276,7 @@ def service_detail(request, service_id):
     tags=['Marketplace']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def create_service(request):
     """Create marketplace service"""
@@ -2223,6 +2295,7 @@ def create_service(request):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def service_reviews(request, service_id):
     """Get service reviews"""
     service = get_object_or_404(Service, id=service_id)
@@ -2272,6 +2345,7 @@ def create_review(request, service_id):
     tags=['Marketplace']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def contact_service(request, service_id):
     """Contact service provider"""
@@ -2300,6 +2374,7 @@ def contact_service(request, service_id):
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_profile(request):
     """Update user profile"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -2318,6 +2393,7 @@ def update_profile(request):
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_notifications(request):
     """Update notification settings"""
     settings, created = UserSettings.objects.get_or_create(user=request.user)
@@ -2336,6 +2412,7 @@ def update_notifications(request):
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_privacy(request):
     """Update privacy settings"""
     settings, created = UserSettings.objects.get_or_create(user=request.user)
@@ -2357,6 +2434,7 @@ def update_privacy(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def change_password(request):
     """Change password"""
     serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
@@ -2378,6 +2456,7 @@ def change_password(request):
 )
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def delete_account(request):
     """Delete account"""
     user = request.user
@@ -2394,6 +2473,7 @@ def delete_account(request):
     tags=['Profiles']
 )
 @api_view(['GET'])
+@api_wrapper
 def user_achievements(request, id):
     """Get user achievements"""
     user = get_object_or_404(User, id=id)
@@ -2409,6 +2489,7 @@ def user_achievements(request, id):
     tags=['Groups']
 )
 @api_view(['GET'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def suggested_groups(request):
     """Get suggested groups based on user's interests"""
@@ -2435,6 +2516,7 @@ def suggested_groups(request):
     tags=['Groups']
 )
 @api_view(['GET'])
+@api_wrapper
 def group_detail(request, group_id):
     """Get detailed information about a group"""
     group = get_object_or_404(Group, id=group_id)
@@ -2479,6 +2561,7 @@ def group_detail(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def leave_group(request, group_id):
     """Leave a group you're a member of"""
     group = get_object_or_404(Group, id=group_id)
@@ -2513,6 +2596,7 @@ def leave_group(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_service(request):
     """Create a new marketplace service"""
     serializer = ServiceSerializer(data=request.data, context={'request': request})
@@ -2532,6 +2616,7 @@ def create_service(request):
 )
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
+@api_wrapper
 def create_startup(request):
     """Create a new startup profile"""
     serializer = StartupSerializer(data=request.data)
@@ -2548,6 +2633,7 @@ def create_startup(request):
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_notifications(request):
     """Update user notification preferences"""
     settings, created = UserSettings.objects.get_or_create(user=request.user)
@@ -2569,6 +2655,7 @@ def update_notifications(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_group(request):
     """Create a new group"""
     serializer = GroupSerializer(
@@ -2613,6 +2700,7 @@ def create_group(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def join_group(request, group_id):
     """Join a public group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -2652,6 +2740,7 @@ def join_group(request, group_id):
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def update_privacy(request):
     """Update user privacy preferences"""
     settings, created = UserSettings.objects.get_or_create(user=request.user)
@@ -2685,6 +2774,7 @@ def update_privacy(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def change_password(request):
     """Change user password"""
     serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
@@ -2712,6 +2802,7 @@ def change_password(request):
 )
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def delete_account(request):
     """Soft delete user account (deactivate)"""
     user = request.user
@@ -2728,6 +2819,7 @@ def delete_account(request):
     tags=['Profiles']
 )
 @api_view(['GET'])
+@api_wrapper
 def user_achievements(request, id):
     """Get achievements earned by a user"""
     user = get_object_or_404(User, id=id)
@@ -2749,6 +2841,7 @@ def user_achievements(request, id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_discussions(request, group_id):
     """Get discussions in a group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -2791,6 +2884,7 @@ def group_discussions(request, group_id):
     tags=['Groups']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def create_discussion(request, group_id):
     """Create a new discussion in a group"""
@@ -2820,6 +2914,7 @@ def create_discussion(request, group_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_events(request, group_id):
     """Get events in a group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -2847,6 +2942,7 @@ def group_events(request, group_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def create_event(request, group_id):
     """Create a new event in a group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -2877,6 +2973,7 @@ def create_event(request, group_id):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def group_chat_messages(request, group_id):
     """Get chat messages in a group"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -2922,6 +3019,7 @@ def group_chat_messages(request, group_id):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def list_services(request):
     """Get marketplace services with filters"""
     services = Service.objects.all()
@@ -2977,6 +3075,7 @@ def list_services(request):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def service_detail(request, service_id):
     """Get detailed information about a service"""
     service = get_object_or_404(Service, id=service_id)
@@ -2992,6 +3091,7 @@ def service_detail(request, service_id):
     tags=['Marketplace']
 )
 @api_view(['GET'])
+@api_wrapper
 def service_reviews(request, service_id):
     """Get reviews for a service"""
     service = get_object_or_404(Service, id=service_id)
@@ -3012,6 +3112,7 @@ def service_reviews(request, service_id):
     tags=['Marketplace']
 )
 @api_view(['POST'])
+@api_wrapper
 @permission_classes([IsAuthenticated])
 def create_review(request, service_id):
     """Add a review for a service"""
@@ -3048,6 +3149,7 @@ def create_review(request, service_id):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_wrapper
 def contact_service(request, service_id):
     """Send message to service provider"""
     service = get_object_or_404(Service, id=service_id)
@@ -3080,6 +3182,7 @@ def contact_service(request, service_id):
     tags=['Jobs']
 )
 @api_view(['GET'])
+@api_wrapper
 def list_jobs(request):
     """Get job listings with filters"""
     # Base queryset - active jobs only
@@ -3173,6 +3276,7 @@ def list_jobs(request):
     tags=['Jobs']
 )
 @api_view(['GET'])
+@api_wrapper
 def job_detail(request, job_id):
     """Get detailed information about a job"""
     job = get_object_or_404(Job, id=job_id, is_active=True)
@@ -3203,6 +3307,7 @@ def job_detail(request, job_id):
     tags=['Jobs']
 )
 @api_view(['POST'])
+@api_wrapper
 def apply_job(request, job_id):
     """Submit job application with resume and cover letter"""
     job = get_object_or_404(Job, id=job_id, is_active=True)
