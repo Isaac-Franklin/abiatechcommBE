@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
-
     class UserType(models.TextChoices):
         MEMBER = "member", _("Community Member")
         INVESTOR = "investor", _("Investor")

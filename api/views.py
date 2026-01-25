@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, permission_classes, APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.db.models import Count, Q
+from drf_yasg.utils import swagger_auto_schema
 from datetime import timedelta
 from django.core.paginator import Paginator
 from django.utils import timezone
@@ -309,7 +310,6 @@ def list_groups(request):
         401: OpenApiResponse(description="Unauthorized"),
         403: OpenApiResponse(description="Forbidden")
     },
-    tags=['Authentication'],
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -465,6 +465,7 @@ def dashboard_stats(request):
     serializer = DashboardStatsSerializer(dashboard_stats)
     return Response(serializer.data)
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -574,7 +575,6 @@ def upcoming_events(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-
 def add_post(request):
     """Create a new post"""
     content = request.data.get('content')
@@ -599,6 +599,7 @@ def add_post(request):
     serializer = PostSerializer(post)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -610,7 +611,6 @@ def add_post(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def like_post(request, post_id):
@@ -632,6 +632,7 @@ def like_post(request, post_id):
         'liked': liked,
         'likes_count': post.likes.count()
     })
+
 
 @extend_schema(
     methods=['POST'],
@@ -656,6 +657,7 @@ def unlike_post(request, post_id):
         'liked': False,
         'likes_count': post.likes.count()
     })
+
 
 @extend_schema(
     methods=['GET'],
@@ -692,6 +694,7 @@ def get_post_comments(request, post_id):
         'has_next': comments_page.has_next(),
         'has_previous': comments_page.has_previous()
     })
+
 
 @extend_schema(
     methods=['POST'],
@@ -767,6 +770,7 @@ def update_startup(request, id):
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -808,6 +812,7 @@ def contact_startup(request, id):
         status=status.HTTP_201_CREATED
     )
 
+
 @extend_schema(
     methods=['POST'],
     request=StartupProfileSerializer,
@@ -833,6 +838,7 @@ def create_startup_profile(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['PATCH'],
     request=StartupProfileSerializer,
@@ -854,6 +860,7 @@ def update_startup_profile(request):
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['GET'],
     responses=StartupProfileSerializer,
@@ -867,6 +874,7 @@ def get_startup_profile(request):
     serializer = StartupProfileSerializer(profile)
     return Response(serializer.data)
 
+
 @extend_schema(
     methods=['GET'],
     responses=StartupSerializer(many=True),
@@ -878,6 +886,7 @@ def list_startups(request):
     startups = Startup.objects.all()
     serializer = StartupSerializer(startups, many=True)
     return Response(serializer.data)
+
 
 @extend_schema(
     methods=['GET'],
@@ -893,6 +902,7 @@ def get_startup(request, id):
     startup = get_object_or_404(Startup, id=id)
     serializer = StartupSerializer(startup)
     return Response(serializer.data)
+
 
 @extend_schema(
     methods=['POST'],
@@ -931,6 +941,7 @@ def enrolled_courses(request):
     serializer = EnrolledCourseSerializer(enrollments, many=True)
     return Response({'results': serializer.data})
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -942,7 +953,6 @@ def enrolled_courses(request):
     responses=CourseSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def available_courses(request):
     """Get available courses"""
@@ -979,6 +989,7 @@ def available_courses(request):
         'total_pages': paginator.num_pages
     })
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -991,7 +1002,6 @@ def available_courses(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def enroll_course(request, course_id):
@@ -1024,6 +1034,7 @@ def enroll_course(request, course_id):
         }
     }, status=status.HTTP_201_CREATED)
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1032,7 +1043,6 @@ def enroll_course(request, course_id):
     responses=EnrolledCourseSerializer,
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def course_progress(request, course_id):
@@ -1041,6 +1051,7 @@ def course_progress(request, course_id):
     enrollment = get_object_or_404(CourseEnrollment, course=course, user=request.user)
     serializer = EnrolledCourseSerializer(enrollment)
     return Response(serializer.data)
+
 
 @extend_schema(
     methods=['PATCH'],
@@ -1051,7 +1062,6 @@ def course_progress(request, course_id):
     responses=EnrolledCourseSerializer,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_progress(request, course_id):
@@ -1084,12 +1094,12 @@ def update_progress(request, course_id):
     serializer = EnrolledCourseSerializer(enrollment)
     return Response(serializer.data)
 
+
 @extend_schema(
     methods=['GET'],
     responses=CertificateSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_certificates(request):
@@ -1098,12 +1108,12 @@ def my_certificates(request):
     serializer = CertificateSerializer(certificates, many=True)
     return Response({'results': serializer.data})
 
+
 @extend_schema(
     methods=['GET'],
     responses=StudyGroupSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_study_groups(request):
@@ -1112,12 +1122,12 @@ def my_study_groups(request):
     serializer = StudyGroupSerializer(study_groups, many=True)
     return Response({'results': serializer.data})
 
+
 @extend_schema(
     methods=['GET'],
     responses=ChallengeSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def active_challenges(request):
     """Get active challenges"""
@@ -1126,6 +1136,7 @@ def active_challenges(request):
         challenge.participants_count = challenge.participants.count()
     serializer = ChallengeSerializer(challenges, many=True, context={'request': request})
     return Response({'results': serializer.data})
+
 
 @extend_schema(
     methods=['POST'],
@@ -1139,7 +1150,6 @@ def active_challenges(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def join_challenge(request, challenge_id):
@@ -1172,7 +1182,6 @@ def join_challenge(request, challenge_id):
     responses=OpenApiTypes.OBJECT,
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
@@ -1193,13 +1202,13 @@ def get_user_profile(request):
     
     return Response(profile_data)
 
+
 @extend_schema(
     methods=['PATCH'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
@@ -1232,13 +1241,13 @@ def update_user_profile(request):
     
     return Response(profile_data)
 
+
 @extend_schema(
     methods=['POST'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_avatar(request):
@@ -1259,12 +1268,12 @@ def update_avatar(request):
         'avatar_url': profile.avatar.url
     })
 
+
 @extend_schema(
     methods=['GET'],
     responses=OpenApiTypes.OBJECT,
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_skills(request):
@@ -1276,6 +1285,7 @@ def get_user_skills(request):
     except:
         return Response({'skills': []})
 
+
 @extend_schema(
     methods=['POST'],
     request=SkillSerializer,
@@ -1285,7 +1295,6 @@ def get_user_skills(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_skill(request):
@@ -1302,13 +1311,13 @@ def create_skill(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['PUT'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
     tags=['Community User']
 )
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_skills(request):
@@ -1321,6 +1330,7 @@ def update_skills(request):
     except:
         return Response({'error': 'Member profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
+
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1331,7 +1341,6 @@ def update_skills(request):
     },
     tags=['Community User']
 )
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_skill(request, skill_id):
@@ -1340,12 +1349,12 @@ def delete_skill(request, skill_id):
     skill.delete()
     return Response({'message': 'Skill deleted'}, status=status.HTTP_204_NO_CONTENT)
 
+
 @extend_schema(
     methods=['GET'],
     responses=CertificationSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_certifications(request):
@@ -1354,6 +1363,7 @@ def get_certifications(request):
     certifications = profile.certifications.all()
     serializer = CertificationSerializer(certifications, many=True)
     return Response(serializer.data)
+
 
 @extend_schema(
     methods=['POST'],
@@ -1364,7 +1374,6 @@ def get_certifications(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_certification(request):
@@ -1378,6 +1387,7 @@ def create_certification(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1388,7 +1398,6 @@ def create_certification(request):
     },
     tags=['Community User']
 )
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_certification(request, cert_id):
@@ -1400,13 +1409,13 @@ def delete_certification(request, cert_id):
         {'message': 'Certification deleted successfully'},
         status=status.HTTP_204_NO_CONTENT
     )
+    
 
 @extend_schema(
     methods=['GET'],
     responses=ProjectSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_projects(request):
@@ -1425,7 +1434,6 @@ def get_projects(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_project(request):
@@ -1439,6 +1447,7 @@ def create_project(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['PATCH'],
     parameters=[
@@ -1448,7 +1457,6 @@ def create_project(request):
     responses=ProjectSerializer,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_project(request, project_id):
@@ -1464,6 +1472,7 @@ def update_project(request, project_id):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1474,7 +1483,6 @@ def update_project(request, project_id):
     },
     tags=['Community User']
 )
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_project(request, project_id):
@@ -1500,7 +1508,6 @@ def delete_project(request, project_id):
     responses=GroupSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def list_groups(request):
     """List all public groups"""
@@ -1544,12 +1551,12 @@ def list_groups(request):
         'total_pages': paginator.num_pages
     })
 
+
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_groups(request):
@@ -1587,6 +1594,7 @@ def my_groups(request):
         'total_pages': paginator.num_pages
     })
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1595,7 +1603,6 @@ def my_groups(request):
     responses=GroupSerializer,
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def group_detail(request, group_id):
     """Get group details"""
@@ -1616,6 +1623,7 @@ def group_detail(request, group_id):
     serializer = GroupSerializer(group, context={'request': request})
     return Response(serializer.data)
 
+
 @extend_schema(
     methods=['POST'],
     request=GroupSerializer,
@@ -1625,7 +1633,6 @@ def group_detail(request, group_id):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group(request):
@@ -1651,6 +1658,7 @@ def create_group(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1663,7 +1671,6 @@ def create_group(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def join_group(request, group_id):
@@ -1694,6 +1701,7 @@ def join_group(request, group_id):
         'role': 'member'
     })
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1705,7 +1713,6 @@ def join_group(request, group_id):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def leave_group(request, group_id):
@@ -1731,12 +1738,12 @@ def leave_group(request, group_id):
         'message': f'Successfully left {group.name}'
     })
 
+
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def suggested_groups(request):
@@ -1765,7 +1772,6 @@ def suggested_groups(request):
     responses=GroupDiscussionSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_discussions(request, group_id):
@@ -1795,6 +1801,7 @@ def group_discussions(request, group_id):
         'total_pages': paginator.num_pages
     })
 
+
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1808,7 +1815,6 @@ def group_discussions(request, group_id):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_discussion(request, group_id):
@@ -1826,6 +1832,7 @@ def create_discussion(request, group_id):
     serializer = GroupDiscussionSerializer(discussion)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1834,7 +1841,6 @@ def create_discussion(request, group_id):
     responses=GroupEventSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_events(request, group_id):
@@ -1847,6 +1853,7 @@ def group_events(request, group_id):
     events = group.events.filter(date__gte=timezone.now()).order_by('date')
     serializer = GroupEventSerializer(events, many=True)
     return Response(serializer.data)
+
 
 @extend_schema(
     methods=['POST'],
@@ -1861,10 +1868,8 @@ def group_events(request, group_id):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-
 def create_event(request, group_id):
     """Create group event"""
     group = get_object_or_404(Group, id=group_id, activity_status='active')
@@ -1880,6 +1885,7 @@ def create_event(request, group_id):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1890,7 +1896,6 @@ def create_event(request, group_id):
     responses=GroupChatMessageSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def group_chat_messages(request, group_id):
@@ -1935,7 +1940,6 @@ def group_chat_messages(request, group_id):
     responses=JobListSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def list_jobs(request):
     """List jobs with filters"""
@@ -2014,6 +2018,7 @@ def list_jobs(request):
             'experience_level': experience_level
         }
     })
+
 
 @extend_schema(
     methods=['GET'],

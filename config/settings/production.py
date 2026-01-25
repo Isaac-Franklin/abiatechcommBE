@@ -1,5 +1,5 @@
 import os
-import dj_database_url
+# import dj_database_url
 from .base import *
 from datetime import timedelta
 
