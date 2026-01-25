@@ -4,11 +4,16 @@ from .base import *
 from datetime import timedelta
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nwoemma$abiatechcomm_db',  # Format: username$dbname
+        'USER': 'nwoemma',
+        'PASSWORD': 'Emmy77@gmail.com',  # Set this from Database tab
+        'HOST': 'nwoemma.mysql.pythonanywhere-services.com',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+    }
 }
 ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com","127.0.0.1"]
 DEBUG =False
