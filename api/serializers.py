@@ -624,8 +624,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = "__all__"
 
-# serializers.py
- 
+
 class GroupMemberSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.CharField(source='user.email', read_only=True)
@@ -685,6 +684,7 @@ class GroupDiscussionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Content cannot be empty.")
         return value.strip()
 
+
 class GroupEventSerializer(serializers.ModelSerializer):
     month = serializers.CharField(read_only=True)
     day = serializers.IntegerField(read_only=True)
@@ -704,6 +704,7 @@ class GroupEventSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Event date cannot be in the past.")
         return value
 
+
 class GroupChatMessageSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
@@ -715,6 +716,7 @@ class GroupChatMessageSerializer(serializers.ModelSerializer):
             'created_at', 'is_read'
         ]
         read_only_fields = ['user', 'created_at', 'is_read']
+        
 class NotificationSettingsSerializer(serializers.ModelSerializer):
     """Serializer for notification settings (PATCH /api/users/settings/notifications/)"""
     
@@ -759,6 +761,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Old password is incorrect")
         return value
+    
     
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -821,6 +824,7 @@ class CourseSerializer(serializers.ModelSerializer):
             return obj.enrollments.filter(user=request.user).exists()
         return False
 
+
 class EnrolledCourseSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
     course_instructor = serializers.CharField(source='course.instructor.username', read_only=True)
@@ -868,10 +872,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
             return obj.participants.filter(user=request.user).exists()
         return False
 
-class AchievementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Achievement
-        fields = "__all__"
+# class AchievementSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         pass
 
 
 class JobDetailSerializer(serializers.ModelSerializer):
@@ -938,3 +941,7 @@ class JobApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You have already applied for this job")
         
         return JobApplication.objects.create(job=job, user=user, **validated_data)
+    
+    
+    
+    

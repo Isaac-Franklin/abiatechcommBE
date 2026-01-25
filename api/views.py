@@ -248,9 +248,61 @@ def UserRegister(request):
             'message': str(e)
         }, status=500)
 
-@extend_schema(
-    methods=['POST'],
-    request=LoginSerializer,
+
+@swagger_auto_schema(
+    method='get',
+    operation_summary='List groups',
+    tags=['Groups'],
+)
+@api_view(['GET'])
+def list_groups(request):
+    """List all public groups with filtering"""
+    groups = Group.objects.filter(
+        activity_status='active',
+        is_private=False
+    )
+    
+    # Apply filters
+    category = request.GET.get('category')
+    search = request.GET.get('search')
+    
+    if category:
+        groups = groups.filter(category__iexact=category)
+    
+    if search:
+        groups = groups.filter(
+            Q(name__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    limit = request.GET.get('limit', 20)
+    
+    paginator = Paginator(groups.order_by('-created_at'), limit)
+    
+    try:
+        groups_page = paginator.page(page)
+    except:
+        groups_page = paginator.page(1)
+    
+    serializer = GroupSerializer(
+        groups_page, 
+        many=True,
+        context={'request': request}
+    )
+    
+    return Response({
+        'results': serializer.data,
+        'total': paginator.count,
+        'page': int(page),
+        'total_pages': paginator.num_pages
+    })
+
+@swagger_auto_schema(
+    method='post',
+    request_body=LoginSerializer,
+    tags=['AUTH'],
     responses={
         200: OpenApiResponse(description="Login successful"),
         400: OpenApiResponse(description="Bad Request"),
