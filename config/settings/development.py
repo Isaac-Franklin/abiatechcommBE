@@ -38,7 +38,7 @@ AUTHENTICATION_BACKENDS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    "http://localhost",
+    "http://localhost:3000",
     "https://winxnovel.netlify.app", 
 ]
 
@@ -47,6 +47,17 @@ CSRF_TRUSTED_ORIGINS = [
     "https://winxnovel.netlify.app", 
 ]
 
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 CORS_ALLOW_METHODS = [
     'GET',
