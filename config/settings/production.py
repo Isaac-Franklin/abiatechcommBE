@@ -10,7 +10,7 @@ DATABASES = {
         ssl_require=True,
     )
 }
-ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com"]
+ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com","127.0.0.1"]
 DEBUG =False
 
 STATIC_URL ="/static/"
@@ -22,7 +22,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = 'django-insecure-wtje&0@(nr)qp#6)o33$ssiu74b*39ekqj&yu_-9x-1x#&gv&4'
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com"]  # tighten later
+ # tighten later
 
 
 REST_FRAMEWORK = {
