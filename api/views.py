@@ -328,7 +328,7 @@ def UserLogin(request):
 @extend_schema(
     methods=['GET'],
     responses=DashboardStatsSerializer,
-    tags=['Dashboard']
+    tags=['Admin User']
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -420,7 +420,7 @@ def dashboard_stats(request):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10)
     ],
     responses=ActivitySerializer(many=True),
-    tags=['Dashboard']
+    tags=['Admin User']
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -437,7 +437,7 @@ def recent_activities(request):
 # Replace the entire UpcomingEventsView class with this function:
 
 @extend_schema(
-    tags=['Events'],
+    tags=['Community User'],
     parameters=[
         OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10)
@@ -518,7 +518,7 @@ def upcoming_events(request):
         201: PostSerializer,
         400: OpenApiResponse(description="Bad Request")
     },
-    tags=['Posts']
+    tags=['Community User']
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -556,7 +556,7 @@ def add_post(request):
         200: OpenApiResponse(description="Like status updated"),
         404: OpenApiResponse(description="Post not found")
     },
-    tags=['Posts']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -590,7 +590,7 @@ def like_post(request, post_id):
         200: OpenApiResponse(description="Post unliked"),
         404: OpenApiResponse(description="Post not found")
     },
-    tags=['Posts']
+    tags=['Community User']
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -613,7 +613,7 @@ def unlike_post(request, post_id):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
     ],
     responses=PostCommentSerializer(many=True),
-    tags=['Posts']
+    tags=['Community User']
 )
 @api_view(['GET'])
 def get_post_comments(request, post_id):
@@ -651,7 +651,7 @@ def get_post_comments(request, post_id):
         201: PostCommentSerializer,
         400: OpenApiResponse(description="Content is required")
     },
-    tags=['Posts']
+    tags=['Community User']
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -695,7 +695,7 @@ def create_comment(request, post_id):
         403: OpenApiResponse(description="Forbidden"),
         404: OpenApiResponse(description="Startup not found")
     },
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
@@ -726,7 +726,7 @@ def update_startup(request, id):
         400: OpenApiResponse(description="Message is required"),
         404: OpenApiResponse(description="Startup not found")
     },
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['POST'])
 def contact_startup(request, id):
@@ -763,7 +763,7 @@ def contact_startup(request, id):
         201: StartupProfileSerializer,
         400: OpenApiResponse(description="Profile already exists")
     },
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -788,7 +788,7 @@ def create_startup_profile(request):
         200: StartupProfileSerializer,
         404: OpenApiResponse(description="Profile not found")
     },
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -805,7 +805,7 @@ def update_startup_profile(request):
 @extend_schema(
     methods=['GET'],
     responses=StartupProfileSerializer,
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -818,7 +818,7 @@ def get_startup_profile(request):
 @extend_schema(
     methods=['GET'],
     responses=StartupSerializer(many=True),
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['GET'])
 def list_startups(request):
@@ -833,7 +833,7 @@ def list_startups(request):
         OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=StartupSerializer,
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['GET'])
 def get_startup(request, id):
@@ -849,7 +849,7 @@ def get_startup(request, id):
         201: StartupSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Startups']
+    tags=['Startup User']
 )
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
@@ -866,7 +866,7 @@ def create_startup(request):
 @extend_schema(
     methods=['GET'],
     responses=EnrolledCourseSerializer(many=True),
-    tags=['Learning']
+    tags=['Community User']
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -888,7 +888,7 @@ def enrolled_courses(request):
         OpenApiParameter(name='category', type=OpenApiTypes.STR)
     ],
     responses=CourseSerializer(many=True),
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -937,7 +937,7 @@ def available_courses(request):
         400: OpenApiResponse(description="Already enrolled"),
         404: OpenApiResponse(description="Course not found")
     },
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -978,7 +978,7 @@ def enroll_course(request, course_id):
         OpenApiParameter(name='course_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=EnrolledCourseSerializer,
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -997,7 +997,7 @@ def course_progress(request, course_id):
     ],
     request=OpenApiTypes.OBJECT,
     responses=EnrolledCourseSerializer,
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -1035,7 +1035,7 @@ def update_progress(request, course_id):
 @extend_schema(
     methods=['GET'],
     responses=CertificateSerializer(many=True),
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1049,7 +1049,7 @@ def my_certificates(request):
 @extend_schema(
     methods=['GET'],
     responses=StudyGroupSerializer(many=True),
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1063,7 +1063,7 @@ def my_study_groups(request):
 @extend_schema(
     methods=['GET'],
     responses=ChallengeSerializer(many=True),
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1085,7 +1085,7 @@ def active_challenges(request):
         400: OpenApiResponse(description="Already participating"),
         404: OpenApiResponse(description="Challenge not found")
     },
-    tags=['Learning']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1118,7 +1118,7 @@ def join_challenge(request, challenge_id):
 @extend_schema(
     methods=['GET'],
     responses=OpenApiTypes.OBJECT,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1145,7 +1145,7 @@ def get_user_profile(request):
     methods=['PATCH'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -1184,7 +1184,7 @@ def update_user_profile(request):
     methods=['POST'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1210,7 +1210,7 @@ def update_avatar(request):
 @extend_schema(
     methods=['GET'],
     responses=OpenApiTypes.OBJECT,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1231,7 +1231,7 @@ def get_user_skills(request):
         201: SkillSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1254,7 +1254,7 @@ def create_skill(request):
     methods=['PUT'],
     request=OpenApiTypes.OBJECT,
     responses=OpenApiTypes.OBJECT,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['PUT'])
@@ -1277,7 +1277,7 @@ def update_skills(request):
     responses={
         204: OpenApiResponse(description="Skill deleted")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['DELETE'])
@@ -1291,7 +1291,7 @@ def delete_skill(request, skill_id):
 @extend_schema(
     methods=['GET'],
     responses=CertificationSerializer(many=True),
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1310,7 +1310,7 @@ def get_certifications(request):
         201: CertificationSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1334,7 +1334,7 @@ def create_certification(request):
     responses={
         204: OpenApiResponse(description="Certification deleted")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['DELETE'])
@@ -1352,7 +1352,7 @@ def delete_certification(request, cert_id):
 @extend_schema(
     methods=['GET'],
     responses=ProjectSerializer(many=True),
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1371,7 +1371,7 @@ def get_projects(request):
         201: ProjectSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1394,7 +1394,7 @@ def create_project(request):
     ],
     request=ProjectSerializer,
     responses=ProjectSerializer,
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -1420,7 +1420,7 @@ def update_project(request, project_id):
     responses={
         204: OpenApiResponse(description="Project deleted")
     },
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['DELETE'])
@@ -1446,7 +1446,7 @@ def delete_project(request, project_id):
         OpenApiParameter(name='search', type=OpenApiTypes.STR)
     ],
     responses=GroupSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1495,7 +1495,7 @@ def list_groups(request):
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1541,7 +1541,7 @@ def my_groups(request):
         OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=GroupSerializer,
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1571,7 +1571,7 @@ def group_detail(request, group_id):
         201: GroupSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1609,7 +1609,7 @@ def create_group(request):
         400: OpenApiResponse(description="Already a member"),
         403: OpenApiResponse(description="Private group")
     },
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1651,7 +1651,7 @@ def join_group(request, group_id):
         200: OpenApiResponse(description="Left group"),
         400: OpenApiResponse(description="Cannot leave")
     },
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1682,7 +1682,7 @@ def leave_group(request, group_id):
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1711,7 +1711,7 @@ def suggested_groups(request):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
     ],
     responses=GroupDiscussionSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1754,7 +1754,7 @@ def group_discussions(request, group_id):
         400: OpenApiResponse(description="Content is required"),
         403: OpenApiResponse(description="Not a member")
     },
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1780,7 +1780,7 @@ def create_discussion(request, group_id):
         OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=GroupEventSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1807,7 +1807,7 @@ def group_events(request, group_id):
         400: OpenApiResponse(description="Validation error"),
         403: OpenApiResponse(description="Not admin/moderator")
     },
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -1836,7 +1836,7 @@ def create_event(request, group_id):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=50)
     ],
     responses=GroupChatMessageSerializer(many=True),
-    tags=['Groups']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1881,7 +1881,7 @@ def group_chat_messages(request, group_id):
         OpenApiParameter(name='search', type=OpenApiTypes.STR)
     ],
     responses=JobListSerializer(many=True),
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1969,7 +1969,7 @@ def list_jobs(request):
         OpenApiParameter(name='job_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=JobDetailSerializer,
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -1994,7 +1994,7 @@ def job_detail(request, job_id):
         400: OpenApiResponse(description="Invalid data or already applied"),
         404: OpenApiResponse(description="Job not found or expired")
     },
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -2042,7 +2042,7 @@ def apply_job(request, job_id):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
     ],
     responses=JobApplicationSerializer(many=True),
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -2076,7 +2076,7 @@ def my_applications(request):
         OpenApiParameter(name='application_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=JobApplicationSerializer,
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -2094,7 +2094,7 @@ def get_application_detail(request, application_id):
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
     ],
     responses=JobListSerializer(many=True),
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -2136,7 +2136,7 @@ def get_bookmarked_jobs(request):
         400: OpenApiResponse(description="Cannot bookmark expired job"),
         404: OpenApiResponse(description="Job not found")
     },
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -2182,7 +2182,7 @@ def toggle_job_bookmark(request, job_id):
 @extend_schema(
     methods=['GET'],
     responses=JobListSerializer(many=True),
-    tags=['Jobs']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -2210,7 +2210,7 @@ def bookmarked_jobs(request):
         OpenApiParameter(name='max_price', type=OpenApiTypes.NUMBER)
     ],
     responses=ServiceSerializer(many=True),
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['GET'])
@@ -2266,7 +2266,7 @@ def list_services(request):
         OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=ServiceSerializer,
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['GET'])
@@ -2283,7 +2283,7 @@ def service_detail(request, service_id):
         201: ServiceSerializer,
         400: OpenApiResponse(description="Validation error")
     },
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['POST'])
@@ -2302,7 +2302,7 @@ def create_service(request):
         OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=ServiceReviewSerializer(many=True),
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['GET'])
@@ -2323,7 +2323,7 @@ def service_reviews(request, service_id):
         201: ServiceReviewSerializer,
         400: OpenApiResponse(description="Already reviewed")
     },
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['POST'])
@@ -2353,7 +2353,7 @@ def create_review(request, service_id):
         201: OpenApiResponse(description="Message sent"),
         400: OpenApiResponse(description="Message required")
     },
-    tags=['Marketplace']
+    tags=['Investor User']
 )
 
 @api_view(['POST'])
@@ -2380,7 +2380,7 @@ def contact_service(request, service_id):
     methods=['PATCH'],
     request=UserProfileSerializer,
     responses=UserProfileSerializer,
-    tags=['Settings']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -2400,7 +2400,7 @@ def update_profile(request):
     methods=['PATCH'],
     request=NotificationSettingsSerializer,
     responses=NotificationSettingsSerializer,
-    tags=['Settings']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -2419,7 +2419,7 @@ def update_notifications(request):
     methods=['PATCH'],
     request=PrivacySettingsSerializer,
     responses=PrivacySettingsSerializer,
-    tags=['Settings']
+    tags=['Community User']
 )
 
 @api_view(['PATCH'])
@@ -2441,7 +2441,7 @@ def update_privacy(request):
         200: OpenApiResponse(description="Password changed"),
         400: OpenApiResponse(description="Invalid data")
     },
-    tags=['Settings']
+    tags=['Community User']
 )
 
 @api_view(['POST'])
@@ -2463,7 +2463,7 @@ def change_password(request):
     responses={
         200: OpenApiResponse(description="Account deleted")
     },
-    tags=['Settings']
+    tags=['Community User']
 )
 
 @api_view(['DELETE'])
@@ -2481,7 +2481,7 @@ def delete_account(request):
         OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=AchievementSerializer(many=True),
-    tags=['Profiles']
+    tags=['Community User']
 )
 
 @api_view(['GET'])
@@ -2492,872 +2492,3 @@ def user_achievements(request, id):
     serializer = AchievementSerializer(achievements, many=True)
     return Response(serializer.data)
 
-# ==================== OTHER MISSING ENDPOINTS ====================
-
-@extend_schema(
-    methods=['GET'],
-    responses=GroupSerializer(many=True),
-    tags=['Groups']
-)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def suggested_groups(request):
-    """Get suggested groups based on user's interests"""
-    user_categories = Group.objects.filter(
-        members__user=request.user
-    ).values_list('category', flat=True).distinct()
-    
-    suggested = Group.objects.exclude(members__user=request.user).filter(
-        activity_status='active',
-        is_private=False
-    ).filter(Q(category__in=user_categories) if user_categories else Q()
-    ).annotate(member_count=Count('members')
-    ).order_by('-member_count')[:10]
-    
-    serializer = GroupSerializer(suggested, many=True, context={'request': request})
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=GroupSerializer,
-    tags=['Groups']
-)
-
-@api_view(['GET'])
-def group_detail(request, group_id):
-    """Get detailed information about a group"""
-    group = get_object_or_404(Group, id=group_id)
-    
-    if group.is_private:
-        if not request.user.is_authenticated:
-            return Response(
-                {'error': 'Authentication required for private groups'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        if not group.members.filter(user=request.user).exists():
-            return Response(
-                {'error': 'Not a member of this private group'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-    
-    serializer = GroupSerializer(group, context={'request': request})
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses={
-        200: OpenApiResponse(
-            description="Left group",
-            examples=[OpenApiExample(
-                name="Success",
-                value={'success': True, 'message': 'Successfully left Group Name'}
-            )]
-        ),
-        400: OpenApiResponse(
-            description="Cannot leave",
-            examples=[OpenApiExample(
-                name="Error",
-                value={'error': 'Group creator cannot leave. Transfer ownership or delete group.'}
-            )]
-        )
-    },
-    tags=['Groups']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def leave_group(request, group_id):
-    """Leave a group you're a member of"""
-    group = get_object_or_404(Group, id=group_id)
-    member = group.members.filter(user=request.user).first()
-    
-    if not member:
-        return Response(
-            {'error': 'Not a member of this group'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    if group.created_by == request.user:
-        return Response(
-            {'error': 'Group creator cannot leave. Transfer ownership or delete group.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    member.delete()
-    return Response({
-        'success': True,
-        'message': f'Successfully left {group.name}'
-    })
-
-@extend_schema(
-    methods=['POST'],
-    request=ServiceSerializer,
-    responses={
-        201: ServiceSerializer,
-        400: OpenApiResponse(description="Validation error")
-    },
-    tags=['Marketplace']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_service(request):
-    """Create a new marketplace service"""
-    serializer = ServiceSerializer(data=request.data, context={'request': request})
-    if serializer.is_valid():
-        service = serializer.save(provider=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    request=StartupSerializer,
-    responses={
-        201: StartupSerializer,
-        400: OpenApiResponse(description="Validation error")
-    },
-    tags=['Startups']
-)
-
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def create_startup(request):
-    """Create a new startup profile"""
-    serializer = StartupSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['PATCH'],
-    request=NotificationSettingsSerializer,
-    responses=NotificationSettingsSerializer,
-    tags=['Settings']
-)
-
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def update_notifications(request):
-    """Update user notification preferences"""
-    settings, created = UserSettings.objects.get_or_create(user=request.user)
-    serializer = NotificationSettingsSerializer(settings, data=request.data, partial=True)
-    
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    request=GroupSerializer,
-    responses={
-        201: GroupSerializer,
-        400: OpenApiResponse(description="Validation error")
-    },
-    tags=['Groups']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_group(request):
-    """Create a new group"""
-    serializer = GroupSerializer(
-        data=request.data,
-        context={'request': request}
-    )
-    
-    if serializer.is_valid():
-        group = serializer.save(created_by=request.user)
-        
-        # Add creator as admin
-        GroupMember.objects.create(
-            group=group,
-            user=request.user,
-            role='admin'
-        )
-        
-        return Response(
-            GroupSerializer(group, context={'request': request}).data,
-            status=status.HTTP_201_CREATED
-        )
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses={
-        200: OpenApiResponse(
-            description="Join success",
-            examples=[OpenApiExample(
-                name="Success",
-                value={'success': True, 'message': 'Successfully joined group name', 'role': 'member'}
-            )]
-        ),
-        400: OpenApiResponse(description="Already a member"),
-        403: OpenApiResponse(description="Private group - request invitation")
-    },
-    tags=['Groups']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def join_group(request, group_id):
-    """Join a public group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check if already a member
-    if group.members.filter(user=request.user).exists():
-        return Response(
-            {'error': 'Already a member of this group'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    # Check if group is private
-    if group.is_private:
-        return Response(
-            {'error': 'This is a private group. Request invitation from admin.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
-    # Join group
-    GroupMember.objects.create(
-        group=group,
-        user=request.user,
-        role='member'
-    )
-    
-    return Response({
-        'success': True,
-        'message': f'Successfully joined {group.name}',
-        'role': 'member'
-    })
-
-@extend_schema(
-    methods=['PATCH'],
-    request=PrivacySettingsSerializer,
-    responses=PrivacySettingsSerializer,
-    tags=['Settings']
-)
-
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def update_privacy(request):
-    """Update user privacy preferences"""
-    settings, created = UserSettings.objects.get_or_create(user=request.user)
-    serializer = PrivacySettingsSerializer(settings, data=request.data, partial=True)
-    
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    request=PasswordChangeSerializer,
-    responses={
-        200: OpenApiResponse(
-            description="Password changed",
-            examples=[OpenApiExample(
-                name="Success",
-                value={'message': 'Password updated successfully'}
-            )]
-        ),
-        400: OpenApiResponse(
-            description="Invalid data",
-            examples=[OpenApiExample(
-                name="Error",
-                value={'old_password': ['Wrong password'], 'new_password': ['Password is too common']}
-            )]
-        )
-    },
-    tags=['Settings']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def change_password(request):
-    """Change user password"""
-    serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
-    
-    if serializer.is_valid():
-        user = request.user
-        user.set_password(serializer.validated_data['new_password'])
-        user.save()
-        update_session_auth_hash(request, user)
-        return Response({'message': 'Password updated successfully'})
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['DELETE'],
-    responses={
-        200: OpenApiResponse(
-            description="Account deleted",
-            examples=[OpenApiExample(
-                name="Success",
-                value={'message': 'Account deleted successfully'}
-            )]
-        )
-    },
-    tags=['Settings']
-)
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_account(request):
-    """Soft delete user account (deactivate)"""
-    user = request.user
-    user.is_active = False
-    user.save()
-    return Response({'message': 'Account deleted successfully'})
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=AchievementSerializer(many=True),
-    tags=['Profiles']
-)
-
-@api_view(['GET'])
-def user_achievements(request, id):
-    """Get achievements earned by a user"""
-    user = get_object_or_404(User, id=id)
-    achievements = user.achievements.all()
-    serializer = AchievementSerializer(achievements, many=True)
-    return Response(serializer.data)
-
-# ==================== GROUP DISCUSSIONS ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH),
-        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
-    ],
-    responses=GroupDiscussionSerializer(many=True),
-    tags=['Groups']
-)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def group_discussions(request, group_id):
-    """Get discussions in a group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check membership
-    if not group.members.filter(user=request.user).exists():
-        return Response({'error': 'You must be a member of this group'}, status=status.HTTP_403_FORBIDDEN)
-    
-    # Pagination
-    page = request.GET.get('page', 1)
-    limit = request.GET.get('limit', 20)
-    
-    discussions = group.discussions.all().order_by('-created_at')
-    paginator = Paginator(discussions, limit)
-    
-    try:
-        discussions_page = paginator.page(page)
-    except:
-        discussions_page = paginator.page(1)
-    
-    serializer = GroupDiscussionSerializer(discussions_page, many=True)
-    
-    return Response({
-        'results': serializer.data,
-        'total': paginator.count,
-        'page': int(page),
-        'total_pages': paginator.num_pages
-    })
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=OpenApiTypes.OBJECT,
-    responses={
-        201: GroupDiscussionSerializer,
-        400: OpenApiResponse(description="Content is required")
-    },
-    tags=['Groups']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_discussion(request, group_id):
-    """Create a new discussion in a group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check membership
-    if not group.members.filter(user=request.user).exists():
-        return Response({'error': 'You must be a member of this group'}, status=status.HTTP_403_FORBIDDEN)
-    
-    content = request.data.get('content')
-    if not content or not content.strip():
-        return Response({'error': 'Discussion content is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    discussion = GroupDiscussion.objects.create(group=group, author=request.user, content=content.strip())
-    serializer = GroupDiscussionSerializer(discussion)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-# ==================== GROUP EVENTS ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=GroupEventSerializer(many=True),
-    tags=['Groups']
-)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def group_events(request, group_id):
-    """Get events in a group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check membership
-    if not group.members.filter(user=request.user).exists():
-        return Response({'error': 'You must be a member of this group'}, status=status.HTTP_403_FORBIDDEN)
-    
-    events = group.events.filter(date__gte=timezone.now()).order_by('date')
-    serializer = GroupEventSerializer(events, many=True)
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=GroupEventSerializer,
-    responses={
-        201: GroupEventSerializer,
-        400: OpenApiResponse(description="Validation error"),
-        403: OpenApiResponse(description="Not admin/moderator")
-    },
-    tags=['Groups']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_event(request, group_id):
-    """Create a new event in a group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check if user is admin/moderator
-    member = group.members.filter(user=request.user).first()
-    if not member or member.role not in ['admin', 'moderator']:
-        return Response({'error': 'Only group admins and moderators can create events'}, status=status.HTTP_403_FORBIDDEN)
-    
-    serializer = GroupEventSerializer(data=request.data)
-    if serializer.is_valid():
-        event = serializer.save(group=group)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# ==================== GROUP CHAT MESSAGES ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH),
-        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=50)
-    ],
-    responses=GroupChatMessageSerializer(many=True),
-    tags=['Groups']
-)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def group_chat_messages(request, group_id):
-    """Get chat messages in a group"""
-    group = get_object_or_404(Group, id=group_id, activity_status='active')
-    
-    # Check membership
-    if not group.members.filter(user=request.user).exists():
-        return Response({'error': 'You must be a member of this group'}, status=status.HTTP_403_FORBIDDEN)
-    
-    # Pagination
-    page = request.GET.get('page', 1)
-    limit = min(int(request.GET.get('limit', 50)), 100)
-    
-    messages = GroupChatMessage.objects.filter(group=group).order_by('-created_at')
-    paginator = Paginator(messages, limit)
-    
-    try:
-        messages_page = paginator.page(page)
-    except:
-        messages_page = paginator.page(1)
-    
-    serializer = GroupChatMessageSerializer(messages_page, many=True)
-    
-    return Response({
-        'results': serializer.data,
-        'total': paginator.count,
-        'page': int(page),
-        'total_pages': paginator.num_pages
-    })
-
-# ==================== MARKETPLACE SERVICES ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20),
-        OpenApiParameter(name='category', type=OpenApiTypes.STR),
-        OpenApiParameter(name='search', type=OpenApiTypes.STR),
-        OpenApiParameter(name='min_price', type=OpenApiTypes.NUMBER),
-        OpenApiParameter(name='max_price', type=OpenApiTypes.NUMBER)
-    ],
-    responses=ServiceSerializer(many=True),
-    tags=['Marketplace']
-)
-
-@api_view(['GET'])
-def list_services(request):
-    """Get marketplace services with filters"""
-    services = Service.objects.all()
-    
-    category = request.GET.get('category')
-    search = request.GET.get('search')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    
-    if category:
-        services = services.filter(category=category)
-    
-    if search:
-        services = services.filter(Q(title__icontains=search) | Q(description__icontains=search))
-    
-    if min_price:
-        try:
-            services = services.filter(price__gte=float(min_price))
-        except ValueError:
-            pass
-    
-    if max_price:
-        try:
-            services = services.filter(price__lte=float(max_price))
-        except ValueError:
-            pass
-    
-    page = request.GET.get('page', 1)
-    limit = request.GET.get('limit', 20)
-    
-    paginator = Paginator(services.order_by('-created_at'), limit)
-    
-    try:
-        services_page = paginator.page(page)
-    except:
-        services_page = paginator.page(1)
-    
-    serializer = ServiceSerializer(services_page, many=True, context={'request': request})
-    
-    return Response({
-        'results': serializer.data,
-        'total': paginator.count,
-        'page': int(page),
-        'total_pages': paginator.num_pages
-    })
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=ServiceSerializer,
-    tags=['Marketplace']
-)
-
-@api_view(['GET'])
-def service_detail(request, service_id):
-    """Get detailed information about a service"""
-    service = get_object_or_404(Service, id=service_id)
-    serializer = ServiceSerializer(service, context={'request': request})
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=ServiceReviewSerializer(many=True),
-    tags=['Marketplace']
-)
-
-@api_view(['GET'])
-def service_reviews(request, service_id):
-    """Get reviews for a service"""
-    service = get_object_or_404(Service, id=service_id)
-    reviews = service.reviews.all().order_by('-created_at')
-    serializer = ServiceReviewSerializer(reviews, many=True)
-    return Response({'results': serializer.data})
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=ServiceReviewSerializer,
-    responses={
-        201: ServiceReviewSerializer,
-        400: OpenApiResponse(description="Already reviewed")
-    },
-    tags=['Marketplace']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_review(request, service_id):
-    """Add a review for a service"""
-    service = get_object_or_404(Service, id=service_id)
-    
-    if ServiceReview.objects.filter(service=service, user=request.user).exists():
-        return Response({'error': 'You have already reviewed this service'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    serializer = ServiceReviewSerializer(data=request.data, context={'request': request})
-    
-    if serializer.is_valid():
-        review = serializer.save(service=service, user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=OpenApiTypes.OBJECT,
-    responses={
-        201: OpenApiResponse(
-            description="Message sent",
-            examples=[OpenApiExample(
-                name="Success",
-                value={'success': True, 'message': 'Message sent successfully', 'contact_id': 1}
-            )]
-        ),
-        400: OpenApiResponse(description="Message required")
-    },
-    tags=['Marketplace']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def contact_service(request, service_id):
-    """Send message to service provider"""
-    service = get_object_or_404(Service, id=service_id)
-    
-    message = request.data.get('message')
-    if not message:
-        return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    contact = ServiceContact.objects.create(service=service, user=request.user, message=message)
-    
-    return Response({
-        'success': True,
-        'message': 'Message sent successfully',
-        'contact_id': contact.id
-    }, status=status.HTTP_201_CREATED)
-
-# ==================== JOB LISTINGS ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20),
-        OpenApiParameter(name='job_type', type=OpenApiTypes.STR),
-        OpenApiParameter(name='location', type=OpenApiTypes.STR),
-        OpenApiParameter(name='is_remote', type=OpenApiTypes.BOOL),
-        OpenApiParameter(name='search', type=OpenApiTypes.STR)
-    ],
-    responses=JobListSerializer(many=True),
-    tags=['Jobs']
-)
-
-@api_view(['GET'])
-def list_jobs(request):
-    """Get job listings with filters"""
-    # Base queryset - active jobs only
-    jobs = Job.objects.filter(is_active=True)
-    
-    # Apply filters from query params
-    job_type = request.GET.get('job_type')
-    location = request.GET.get('location')
-    salary_min = request.GET.get('salary_min')
-    salary_max = request.GET.get('salary_max')
-    search = request.GET.get('search')
-    is_remote = request.GET.get('is_remote')
-    experience_level = request.GET.get('experience_level')
-    
-    if job_type:
-        jobs = jobs.filter(job_type=job_type)
-    
-    if location:
-        jobs = jobs.filter(location__icontains=location)
-    
-    if salary_min:
-        try:
-            jobs = jobs.filter(salary_min__gte=float(salary_min))
-        except ValueError:
-            pass
-    
-    if salary_max:
-        try:
-            jobs = jobs.filter(salary_max__lte=float(salary_max))
-        except ValueError:
-            pass
-    
-    if is_remote:
-        jobs = jobs.filter(is_remote=(is_remote.lower() == 'true'))
-    
-    if experience_level:
-        jobs = jobs.filter(experience_level=experience_level)
-    
-    if search:
-        jobs = jobs.filter(
-            Q(title__icontains=search) |
-            Q(company__icontains=search) |
-            Q(description__icontains=search) |
-            Q(tags__contains=[search])
-        )
-    
-    # Exclude expired jobs
-    jobs = jobs.filter(Q(deadline__gte=timezone.now().date()) | Q(deadline__isnull=True))
-    
-    # Order by featured first, then by posting date
-    jobs = jobs.order_by('-is_featured', '-posted_at')
-    
-    # Pagination
-    page = request.GET.get('page', 1)
-    limit = request.GET.get('limit', 20)
-    
-    try:
-        page = int(page)
-        limit = min(int(limit), 50)
-    except ValueError:
-        return Response({'error': 'page and limit must be integers'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    paginator = Paginator(jobs, limit)
-    
-    try:
-        jobs_page = paginator.page(page)
-    except:
-        jobs_page = paginator.page(1)
-    
-    serializer = JobListSerializer(jobs_page, many=True, context={'request': request})
-    
-    return Response({
-        'results': serializer.data,
-        'total': paginator.count,
-        'page': page,
-        'total_pages': paginator.num_pages,
-        'filters': {
-            'job_type': job_type,
-            'location': location,
-            'is_remote': is_remote,
-            'experience_level': experience_level
-        }
-    })
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='job_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=JobDetailSerializer,
-    tags=['Jobs']
-)
-
-@api_view(['GET'])
-def job_detail(request, job_id):
-    """Get detailed information about a job"""
-    job = get_object_or_404(Job, id=job_id, is_active=True)
-    
-    # Check if job is expired
-    if job.deadline and job.deadline < date.today():
-        return Response({'error': 'This job posting has expired'}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = JobDetailSerializer(job, context={'request': request})
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='job_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=OpenApiTypes.OBJECT,
-    responses={
-        201: JobApplicationSerializer,
-        400: OpenApiResponse(
-            description="Invalid data or already applied",
-            examples=[OpenApiExample(
-                name="Error",
-                value={'error': 'You have already applied for this job'}
-            )]
-        )
-    },
-    tags=['Jobs']
-)
-
-@api_view(['POST'])
-def apply_job(request, job_id):
-    """Submit job application with resume and cover letter"""
-    job = get_object_or_404(Job, id=job_id, is_active=True)
-    
-    # Check if job is expired
-    if job.is_expired:
-        return Response({'error': 'This job posting has expired'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Check if already applied
-    if JobApplication.objects.filter(job=job, user=request.user).exists():
-        return Response({'error': 'You have already applied for this job'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate required fields
-    cover_letter = request.data.get('cover_letter')
-    resume = request.FILES.get('resume')
-    
-    if not cover_letter or not cover_letter.strip():
-        return Response({'error': 'Cover letter is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if not resume:
-        return Response({'error': 'Resume file is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate file size (max 5MB)
-    if resume.size > 5 * 1024 * 1024:
-        return Response({'error': 'Resume file must be less than 5MB'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate file type
-    valid_extensions = ['.pdf', '.doc', '.docx']
-    if not any(resume.name.lower().endswith(ext) for ext in valid_extensions):
-        return Response({'error': 'Resume must be PDF or Word document'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Create application
-    application = JobApplication.objects.create(job=job, user=request.user, cover_letter=cover_letter.strip(), resume=resume)
-    
-    serializer = JobApplicationSerializer(application)
-    
-    return Response({
-        'success': True,
-        'message': 'Application submitted successfully',
-        'application': serializer.data,
-        'application_id': application.id
-    }, status=status.HTTP_201_CREATED)
