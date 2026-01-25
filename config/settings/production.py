@@ -6,7 +6,7 @@ from datetime import timedelta
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nwoemma$abiatechcomm',  # Format: username$dbname
+        'NAME': 'nwoemma$default',  # Format: username$dbname
         'USER': 'nwoemma',
         'PASSWORD': 'Emmy77@gmail.com',  # Set this from Database tab
         'HOST': 'nwoemma.mysql.pythonanywhere-services.com',
