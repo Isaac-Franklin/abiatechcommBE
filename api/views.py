@@ -867,7 +867,7 @@ def create_startup(request):
     methods=['GET'],
     responses=EnrolledCourseSerializer(many=True),
     tags=['Learning']
-
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def enrolled_courses(request):
