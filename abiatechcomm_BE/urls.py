@@ -23,6 +23,7 @@ urlpatterns = [
 
     # Your API apps
     path("api/v1/auth/", include("api.urls")),
+    path("api2/v1/auth/", include("api2.urls")),
     # path('onboard/', include("onboarding.urls")),  # uncomment when ready
 
     # JWT authentication endpoints
@@ -32,8 +33,8 @@ urlpatterns = [
 
     # API Schema & Documentation (using drf-spectacular)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),                  # raw OpenAPI JSON/YAML
-    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),   # Swagger UI at root "/"
-    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),    # Redoc UI
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),   # Swagger UI at root "/"
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),    # Redoc UI
 ]
 
 # Serve media files in development (DEBUG mode)

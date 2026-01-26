@@ -17,13 +17,11 @@ class Group(models.Model):
         ('music', 'Music'),
         ('other', 'Other'),
     ]
-    
     ACTIVITY_STATUS_CHOICES = [
         ('active', 'Active'),
         ('inactive', 'Inactive'),
         ('archived', 'Archived'),
     ]
-    
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField(blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -32,7 +30,6 @@ class Group(models.Model):
         choices=ACTIVITY_STATUS_CHOICES, 
         default='active'
     )
-    
     created_by = models.ForeignKey(
         User, 
         related_name='created_groups', 
@@ -53,15 +50,12 @@ class Group(models.Model):
     @property
     def member_count(self):
         return self.members.count()  # Count related GroupMembers
-
-
 class GroupMember(models.Model):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('moderator', 'Moderator'),
         ('member', 'Member'),
     ]
-    
     group = models.ForeignKey(Group, related_name='members', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='group_memberships', on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
@@ -73,9 +67,6 @@ class GroupMember(models.Model):
     
     def __str__(self):
         return f"{self.user.username} in {self.group.name} ({self.role})"
-
-
-
 class GroupDiscussion(models.Model):
     group = models.ForeignKey('Group', related_name='discussions', on_delete=models.CASCADE)
     author = models.ForeignKey(User, related_name='group_discussions', on_delete=models.CASCADE)
@@ -84,15 +75,12 @@ class GroupDiscussion(models.Model):
     
     def __str__(self):
         return f"Discussion by {self.author.username} in {self.group.name}"
-
-
 class GroupChatMessage(models.Model):
     MESSAGE_TYPE_CHOICES = [
         ('text', 'Text'),
         ('file', 'File'),
         ('image', 'Image'),
     ]
-    
     group = models.ForeignKey(Group, related_name='chat_messages', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='group_messages', on_delete=models.CASCADE)
     message = models.TextField()
@@ -103,11 +91,6 @@ class GroupChatMessage(models.Model):
     
     def __str__(self):
         return f"{self.user.username}: {self.message[:30]}"
-
-
-
-
-
 class GroupEvent(models.Model):
     group = models.ForeignKey('Group', related_name='events', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)

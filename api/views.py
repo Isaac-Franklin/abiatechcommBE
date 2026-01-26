@@ -57,12 +57,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 
 # Helper functions
-def is_startup_owner(user, startup):
-    """Check if user is the owner of the startup"""
-    try:
-        return startup.user == user
-    except:
-        return False
+
     
 def api_wrapper(view_func):
     @wraps(view_func)
@@ -99,7 +94,6 @@ def api_wrapper(view_func):
 
     return _wrapped_view
 # ==================== AUTHENTICATION ====================
-
 @extend_schema(
     methods=['POST'],
     request=UserRegistrationSerializer,
@@ -248,8 +242,6 @@ def UserRegister(request):
             'success': False,
             'message': str(e)
         }, status=500)
-
-
 @swagger_auto_schema(
     method='get',
     operation_summary='List groups',
@@ -279,27 +271,22 @@ def list_groups(request):
     # Pagination
     page = request.GET.get('page', 1)
     limit = request.GET.get('limit', 20)
-    
     paginator = Paginator(groups.order_by('-created_at'), limit)
-    
     try:
         groups_page = paginator.page(page)
     except:
         groups_page = paginator.page(1)
-    
     serializer = GroupSerializer(
         groups_page, 
         many=True,
         context={'request': request}
     )
-    
     return Response({
         'results': serializer.data,
         'total': paginator.count,
         'page': int(page),
         'total_pages': paginator.num_pages
     })
-
 @swagger_auto_schema(
     method='post',
     request_body=LoginSerializer,
@@ -372,11 +359,8 @@ def UserLogin(request):
         },
         "profile": serialize_profile(profile),
     }
-
     return Response(response_data, status=status.HTTP_200_OK)
-
 # ==================== DASHBOARD & STATS ====================
-
 @extend_schema(
     methods=['GET'],
     responses=DashboardStatsSerializer,
@@ -737,191 +721,7 @@ def create_comment(request, post_id):
     serializer = PostCommentSerializer(comment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-# ==================== STARTUPS ====================
 
-@extend_schema(
-    methods=['PATCH'],
-    parameters=[
-        OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=StartupSerializer,
-    responses={
-        200: StartupSerializer,
-        403: OpenApiResponse(description="Forbidden"),
-        404: OpenApiResponse(description="Startup not found")
-    },
-    tags=['Startup User']
-)
-@api_view(['PATCH'])
-@parser_classes([MultiPartParser, FormParser])
-def update_startup(request, id):
-    """Update startup information"""
-    startup = get_object_or_404(Startup, id=id)
-    
-    if not is_startup_owner(request.user, startup):
-        return Response(
-            {"detail": "You don't have permission to update this startup."},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
-    serializer = StartupSerializer(startup, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=StartupContactSerializer,
-    responses={
-        201: StartupContactSerializer,
-        400: OpenApiResponse(description="Message is required"),
-        404: OpenApiResponse(description="Startup not found")
-    },
-    tags=['Startup User']
-)
-@api_view(['POST'])
-def contact_startup(request, id):
-    """Send inquiry to startup"""
-    startup = get_object_or_404(Startup, id=id)
-    
-    message = request.data.get('message')
-    if not message:
-        return Response(
-            {"detail": "Message is required."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    contact = StartupContact.objects.create(
-        user=request.user,
-        startup=startup,
-        message=message
-    )
-    
-    serializer = StartupContactSerializer(contact)
-    
-    return Response(
-        {
-            "message": "Inquiry sent successfully!",
-            "contact": serializer.data
-        },
-        status=status.HTTP_201_CREATED
-    )
-
-
-@extend_schema(
-    methods=['POST'],
-    request=StartupProfileSerializer,
-    responses={
-        201: StartupProfileSerializer,
-        400: OpenApiResponse(description="Profile already exists")
-    },
-    tags=['Startup User']
-)
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_startup_profile(request):
-    """Create startup profile"""
-    if hasattr(request.user, 'startup_profile'):
-        return Response(
-            {"detail": "Startup profile already exists. Use update endpoint."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    serializer = StartupProfileSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema(
-    methods=['PATCH'],
-    request=StartupProfileSerializer,
-    responses={
-        200: StartupProfileSerializer,
-        404: OpenApiResponse(description="Profile not found")
-    },
-    tags=['Startup User']
-)
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def update_startup_profile(request):
-    """Update startup profile"""
-    profile = get_object_or_404(StartupProfile, user=request.user)
-    
-    serializer = StartupProfileSerializer(profile, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema(
-    methods=['GET'],
-    responses=StartupProfileSerializer,
-    tags=['Startup User']
-)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_startup_profile(request):
-    """Get user's startup profile"""
-    profile = get_object_or_404(StartupProfile, user=request.user)
-    serializer = StartupProfileSerializer(profile)
-    return Response(serializer.data)
-
-
-@extend_schema(
-    methods=['GET'],
-    responses=StartupSerializer(many=True),
-    tags=['Startup User']
-)
-@api_view(['GET'])
-def list_startups(request):
-    """List all startups"""
-    startups = Startup.objects.all()
-    serializer = StartupSerializer(startups, many=True)
-    return Response(serializer.data)
-
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=StartupSerializer,
-    tags=['Startup User']
-)
-@api_view(['GET'])
-def get_startup(request, id):
-    """Get startup details"""
-    startup = get_object_or_404(Startup, id=id)
-    serializer = StartupSerializer(startup)
-    return Response(serializer.data)
-
-
-@extend_schema(
-    methods=['POST'],
-    request=StartupSerializer,
-    responses={
-        201: StartupSerializer,
-        400: OpenApiResponse(description="Validation error")
-    },
-    tags=['Startup User']
-)
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def create_startup(request):
-    """Create a new startup"""
-    serializer = StartupSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # ==================== LEARNING ====================
 
@@ -1093,8 +893,6 @@ def update_progress(request, course_id):
     
     serializer = EnrolledCourseSerializer(enrollment)
     return Response(serializer.data)
-
-
 @extend_schema(
     methods=['GET'],
     responses=CertificateSerializer(many=True),
@@ -1107,8 +905,6 @@ def my_certificates(request):
     certificates = Certificate.objects.filter(user=request.user)
     serializer = CertificateSerializer(certificates, many=True)
     return Response({'results': serializer.data})
-
-
 @extend_schema(
     methods=['GET'],
     responses=StudyGroupSerializer(many=True),
@@ -1121,8 +917,6 @@ def my_study_groups(request):
     study_groups = StudyGroup.objects.filter(members=request.user)
     serializer = StudyGroupSerializer(study_groups, many=True)
     return Response({'results': serializer.data})
-
-
 @extend_schema(
     methods=['GET'],
     responses=ChallengeSerializer(many=True),
@@ -1136,8 +930,6 @@ def active_challenges(request):
         challenge.participants_count = challenge.participants.count()
     serializer = ChallengeSerializer(challenges, many=True, context={'request': request})
     return Response({'results': serializer.data})
-
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1174,9 +966,7 @@ def join_challenge(request, challenge_id):
             'deadline': challenge.deadline
         }
     }, status=status.HTTP_201_CREATED)
-
 # ==================== USER PROFILES ====================
-
 @extend_schema(
     methods=['GET'],
     responses=OpenApiTypes.OBJECT,
@@ -1201,8 +991,6 @@ def get_user_profile(request):
     profile_data['last_name'] = request.user.last_name
     
     return Response(profile_data)
-
-
 @extend_schema(
     methods=['PATCH'],
     request=OpenApiTypes.OBJECT,
@@ -1240,8 +1028,6 @@ def update_user_profile(request):
     })
     
     return Response(profile_data)
-
-
 @extend_schema(
     methods=['POST'],
     request=OpenApiTypes.OBJECT,
@@ -1267,8 +1053,6 @@ def update_avatar(request):
     return Response({
         'avatar_url': profile.avatar.url
     })
-
-
 @extend_schema(
     methods=['GET'],
     responses=OpenApiTypes.OBJECT,
@@ -1284,8 +1068,6 @@ def get_user_skills(request):
         return Response({'skills': [s.strip() for s in skills]})
     except:
         return Response({'skills': []})
-
-
 @extend_schema(
     methods=['POST'],
     request=SkillSerializer,
@@ -1310,8 +1092,6 @@ def create_skill(request):
         return Response(SkillSerializer(skill).data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['PUT'],
     request=OpenApiTypes.OBJECT,
@@ -1329,8 +1109,6 @@ def update_skills(request):
         return Response({'skills': profile.skills.split(',') if profile.skills else []})
     except:
         return Response({'error': 'Member profile not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1348,8 +1126,6 @@ def delete_skill(request, skill_id):
     skill = get_object_or_404(Skill, id=skill_id, profile__user=request.user)
     skill.delete()
     return Response({'message': 'Skill deleted'}, status=status.HTTP_204_NO_CONTENT)
-
-
 @extend_schema(
     methods=['GET'],
     responses=CertificationSerializer(many=True),
@@ -1363,8 +1139,6 @@ def get_certifications(request):
     certifications = profile.certifications.all()
     serializer = CertificationSerializer(certifications, many=True)
     return Response(serializer.data)
-
-
 @extend_schema(
     methods=['POST'],
     request=CertificationSerializer,
@@ -1386,8 +1160,6 @@ def create_certification(request):
         return Response(CertificationSerializer(certification).data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1409,8 +1181,6 @@ def delete_certification(request, cert_id):
         {'message': 'Certification deleted successfully'},
         status=status.HTTP_204_NO_CONTENT
     )
-    
-
 @extend_schema(
     methods=['GET'],
     responses=ProjectSerializer(many=True),
@@ -1446,8 +1216,6 @@ def create_project(request):
         return Response(ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['PATCH'],
     parameters=[
@@ -1471,8 +1239,6 @@ def update_project(request, project_id):
         return Response(serializer.data)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['DELETE'],
     parameters=[
@@ -1494,9 +1260,7 @@ def delete_project(request, project_id):
         {'message': 'Project deleted successfully'},
         status=status.HTTP_204_NO_CONTENT
     )
-
 # ==================== GROUPS ====================
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1550,8 +1314,6 @@ def list_groups(request):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
-
-
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
@@ -1593,8 +1355,6 @@ def my_groups(request):
         'page': page,
         'total_pages': paginator.num_pages
     })
-
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1622,8 +1382,6 @@ def group_detail(request, group_id):
     
     serializer = GroupSerializer(group, context={'request': request})
     return Response(serializer.data)
-
-
 @extend_schema(
     methods=['POST'],
     request=GroupSerializer,
@@ -1657,8 +1415,6 @@ def create_group(request):
         )
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1682,13 +1438,11 @@ def join_group(request, group_id):
             {'error': 'Already a member of this group'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
     if group.is_private:
         return Response(
             {'error': 'This is a private group. Request invitation from admin.'},
             status=status.HTTP_403_FORBIDDEN
         )
-    
     GroupMember.objects.create(
         group=group,
         user=request.user,
@@ -1700,8 +1454,6 @@ def join_group(request, group_id):
         'message': f'Successfully joined {group.name}',
         'role': 'member'
     })
-
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1737,8 +1489,6 @@ def leave_group(request, group_id):
         'success': True,
         'message': f'Successfully left {group.name}'
     })
-
-
 @extend_schema(
     methods=['GET'],
     responses=GroupSerializer(many=True),
@@ -1761,7 +1511,6 @@ def suggested_groups(request):
     
     serializer = GroupSerializer(suggested, many=True, context={'request': request})
     return Response(serializer.data)
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1800,8 +1549,6 @@ def group_discussions(request, group_id):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
-
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1831,8 +1578,6 @@ def create_discussion(request, group_id):
     discussion = GroupDiscussion.objects.create(group=group, author=request.user, content=content.strip())
     serializer = GroupDiscussionSerializer(discussion)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1853,8 +1598,6 @@ def group_events(request, group_id):
     events = group.events.filter(date__gte=timezone.now()).order_by('date')
     serializer = GroupEventSerializer(events, many=True)
     return Response(serializer.data)
-
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -1884,8 +1627,6 @@ def create_event(request, group_id):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1924,9 +1665,7 @@ def group_chat_messages(request, group_id):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
-
 # ==================== JOBS ====================
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -1998,14 +1737,12 @@ def list_jobs(request):
         return Response({'error': 'page and limit must be integers'}, status=status.HTTP_400_BAD_REQUEST)
     
     paginator = Paginator(jobs, limit)
-    
     try:
         jobs_page = paginator.page(page)
     except:
         jobs_page = paginator.page(1)
     
     serializer = JobListSerializer(jobs_page, many=True, context={'request': request})
-    
     return Response({
         'results': serializer.data,
         'total': paginator.count,
@@ -2018,8 +1755,6 @@ def list_jobs(request):
             'experience_level': experience_level
         }
     })
-
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -2080,11 +1815,8 @@ def apply_job(request, job_id):
     valid_extensions = ['.pdf', '.doc', '.docx']
     if not any(resume.name.lower().endswith(ext) for ext in valid_extensions):
         return Response({'error': 'Resume must be PDF or Word document'}, status=status.HTTP_400_BAD_REQUEST)
-    
     application = JobApplication.objects.create(job=job, user=request.user, cover_letter=cover_letter.strip(), resume=resume)
-    
     serializer = JobApplicationSerializer(application)
-    
     return Response({
         'success': True,
         'message': 'Application submitted successfully',
@@ -2101,7 +1833,6 @@ def apply_job(request, job_id):
     responses=JobApplicationSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_applications(request):
@@ -2126,7 +1857,6 @@ def my_applications(request):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -2135,15 +1865,12 @@ def my_applications(request):
     responses=JobApplicationSerializer,
     tags=['Community User']
 )
-
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_application_detail(request, application_id):
     """Get application details"""
     application = get_object_or_404(JobApplication, id=application_id, user=request.user)
     serializer = JobApplicationSerializer(application)
     return Response(serializer.data)
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -2153,9 +1880,7 @@ def get_application_detail(request, application_id):
     responses=JobListSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_bookmarked_jobs(request):
     """Get bookmarked jobs"""
     bookmarked_jobs = Job.objects.filter(
@@ -2182,7 +1907,6 @@ def get_bookmarked_jobs(request):
         'total_pages': paginator.num_pages,
         'total_bookmarked': paginator.count
     })
-
 @extend_schema(
     methods=['POST'],
     parameters=[
@@ -2195,7 +1919,6 @@ def get_bookmarked_jobs(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_job_bookmark(request, job_id):
@@ -2235,13 +1958,11 @@ def toggle_job_bookmark(request, job_id):
             'company': job.company
         }
     })
-
 @extend_schema(
     methods=['GET'],
     responses=JobListSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def bookmarked_jobs(request):
@@ -2253,193 +1974,14 @@ def bookmarked_jobs(request):
     
     serializer = JobListSerializer(bookmarked_jobs, many=True, context={'request': request})
     return Response(serializer.data)
-
 # ==================== MARKETPLACE ====================
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
-        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20),
-        OpenApiParameter(name='category', type=OpenApiTypes.STR),
-        OpenApiParameter(name='search', type=OpenApiTypes.STR),
-        OpenApiParameter(name='min_price', type=OpenApiTypes.NUMBER),
-        OpenApiParameter(name='max_price', type=OpenApiTypes.NUMBER)
-    ],
-    responses=ServiceSerializer(many=True),
-    tags=['Investor User']
-)
-
-@api_view(['GET'])
-def list_services(request):
-    """List marketplace services"""
-    services = Service.objects.all()
-    
-    category = request.GET.get('category')
-    search = request.GET.get('search')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    
-    if category:
-        services = services.filter(category=category)
-    
-    if search:
-        services = services.filter(Q(title__icontains=search) | Q(description__icontains=search))
-    
-    if min_price:
-        try:
-            services = services.filter(price__gte=float(min_price))
-        except ValueError:
-            pass
-    
-    if max_price:
-        try:
-            services = services.filter(price__lte=float(max_price))
-        except ValueError:
-            pass
-    
-    page = request.GET.get('page', 1)
-    limit = request.GET.get('limit', 20)
-    
-    paginator = Paginator(services.order_by('-created_at'), limit)
-    
-    try:
-        services_page = paginator.page(page)
-    except:
-        services_page = paginator.page(1)
-    
-    serializer = ServiceSerializer(services_page, many=True, context={'request': request})
-    
-    return Response({
-        'results': serializer.data,
-        'total': paginator.count,
-        'page': int(page),
-        'total_pages': paginator.num_pages
-    })
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=ServiceSerializer,
-    tags=['Investor User']
-)
-
-@api_view(['GET'])
-def service_detail(request, service_id):
-    """Get service details"""
-    service = get_object_or_404(Service, id=service_id)
-    serializer = ServiceSerializer(service, context={'request': request})
-    return Response(serializer.data)
-
-@extend_schema(
-    methods=['POST'],
-    request=ServiceSerializer,
-    responses={
-        201: ServiceSerializer,
-        400: OpenApiResponse(description="Validation error")
-    },
-    tags=['Investor User']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_service(request):
-    """Create marketplace service"""
-    serializer = ServiceSerializer(data=request.data, context={'request': request})
-    if serializer.is_valid():
-        service = serializer.save(provider=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['GET'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    responses=ServiceReviewSerializer(many=True),
-    tags=['Investor User']
-)
-
-@api_view(['GET'])
-def service_reviews(request, service_id):
-    """Get service reviews"""
-    service = get_object_or_404(Service, id=service_id)
-    reviews = service.reviews.all().order_by('-created_at')
-    serializer = ServiceReviewSerializer(reviews, many=True)
-    return Response({'results': serializer.data})
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=ServiceReviewSerializer,
-    responses={
-        201: ServiceReviewSerializer,
-        400: OpenApiResponse(description="Already reviewed")
-    },
-    tags=['Investor User']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_review(request, service_id):
-    """Create service review"""
-    service = get_object_or_404(Service, id=service_id)
-    
-    if ServiceReview.objects.filter(service=service, user=request.user).exists():
-        return Response({'error': 'You have already reviewed this service'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    serializer = ServiceReviewSerializer(data=request.data, context={'request': request})
-    
-    if serializer.is_valid():
-        review = serializer.save(service=service, user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=OpenApiTypes.OBJECT,
-    responses={
-        201: OpenApiResponse(description="Message sent"),
-        400: OpenApiResponse(description="Message required")
-    },
-    tags=['Investor User']
-)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def contact_service(request, service_id):
-    """Contact service provider"""
-    service = get_object_or_404(Service, id=service_id)
-    
-    message = request.data.get('message')
-    if not message:
-        return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    contact = ServiceContact.objects.create(service=service, user=request.user, message=message)
-    
-    return Response({
-        'success': True,
-        'message': 'Message sent successfully',
-        'contact_id': contact.id
-    }, status=status.HTTP_201_CREATED)
-
 # ==================== USER SETTINGS ====================
-
 @extend_schema(
     methods=['PATCH'],
     request=UserProfileSerializer,
     responses=UserProfileSerializer,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @parser_classes([MultiPartParser, FormParser])
 @permission_classes([IsAuthenticated])
@@ -2452,14 +1994,12 @@ def update_profile(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @extend_schema(
     methods=['PATCH'],
     request=NotificationSettingsSerializer,
     responses=NotificationSettingsSerializer,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_notifications(request):
@@ -2471,14 +2011,12 @@ def update_notifications(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @extend_schema(
     methods=['PATCH'],
     request=PrivacySettingsSerializer,
     responses=PrivacySettingsSerializer,
     tags=['Community User']
 )
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_privacy(request):
@@ -2490,7 +2028,6 @@ def update_privacy(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @extend_schema(
     methods=['POST'],
     request=PasswordChangeSerializer,
@@ -2500,7 +2037,6 @@ def update_privacy(request):
     },
     tags=['Community User']
 )
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
@@ -2514,7 +2050,6 @@ def change_password(request):
         update_session_auth_hash(request, user)
         return Response({'message': 'Password updated successfully'})
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @extend_schema(
     methods=['DELETE'],
     responses={
@@ -2522,7 +2057,6 @@ def change_password(request):
     },
     tags=['Community User']
 )
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
@@ -2531,7 +2065,6 @@ def delete_account(request):
     user.is_active = False
     user.save()
     return Response({'message': 'Account deleted successfully'})
-
 @extend_schema(
     methods=['GET'],
     parameters=[
@@ -2540,7 +2073,6 @@ def delete_account(request):
     responses=AchievementSerializer(many=True),
     tags=['Community User']
 )
-
 @api_view(['GET'])
 def user_achievements(request, id):
     """Get user achievements"""
@@ -2548,4 +2080,3 @@ def user_achievements(request, id):
     achievements = user.achievements.all()
     serializer = AchievementSerializer(achievements, many=True)
     return Response(serializer.data)
-

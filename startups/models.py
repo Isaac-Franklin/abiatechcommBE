@@ -95,7 +95,10 @@ class StartupContact(models.Model):
     startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name="contacts")
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
+    class Meta:
+        ordering = ['-created_at']
+    def __str__(self):
+        return f"Contact from {self.user.email} to {self.startup.name}"
 
 class StartupProfile(models.Model):
     """Profile for Startups/Founders"""

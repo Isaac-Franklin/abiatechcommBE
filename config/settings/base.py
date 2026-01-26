@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'accounts',
     'api',
+    'api2',
     'community',
     'groups',
     'jobs',

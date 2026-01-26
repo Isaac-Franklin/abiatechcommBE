@@ -378,6 +378,7 @@ class PostLikeSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+        
 class PostShareSerializer(serializers.ModelSerializer):
     """Serializer for PostShare model"""
     user = UserSerializer(read_only=True)
