@@ -10,18 +10,25 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
-
+from django.utils.timezone import now
+from leaderboard.models import PointTransaction
+from groups import models
 from startups.models import Startup, StartupProfile, StartupContact
+from onboarding.models import InvestorProfile   
 from marketplace.models import Service, ServiceReview, ServiceContact
-
+from datetime import timedelta
+from django.utils import timezone
+from jobs.models import Job
 # Serializers — add ServiceSerializer and ServiceReviewSerializer here (api.serializers used above)
 from .serializers import (
+    PointTransactionSerializer,
     StartupSerializer,
     StartupProfileSerializer,
     StartupContactSerializer,
     ServiceSerializer,
     ServiceReviewSerializer,
-    ServiceContactSerializer,  
+    ServiceContactSerializer,
+    StartupStatsSerializer,  
 )
 # Create your views here.
 # ==================== STARTUPS ====================
@@ -270,7 +277,6 @@ def service_detail(request, service_id):
     tags=['Investor User']
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def create_service(request):
     """Create marketplace service"""
     serializer = ServiceSerializer(data=request.data, context={'request': request})
@@ -333,7 +339,6 @@ def create_review(request, service_id):
     tags=['Investor User']
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def contact_service(request, service_id):
     """Contact service provider"""
     service = get_object_or_404(Service, id=service_id)
@@ -353,3 +358,67 @@ def contact_service(request, service_id):
             'contact_id': contact.id
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['GET'],
+    parameters=[
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
+    ],
+    responses=StartupStatsSerializer,
+    tags=['Startup User','Investor User']
+)
+@api_view(["GET"])
+def startup_stats(request):
+    """
+    Get startup and fundings stats
+    """
+    total_startups = Startup.objects.count()
+    total_funding = Startup.objects.aggregate(models.Sum('total_funding'))['total_funding__sum'] or 0
+    active_investors = InvestorProfile.objects.filter(is_active=True).count()
+    jobs_created = Job.objects.count()
+    # Monthly Growth
+    one_month_ago = timezone.now() - timedelta(days=30)
+    startups_last_month = Startup.objects.filter(created_at__gte=one_month_ago).count
+    funding_last_month = Startup.objects.filter(
+        last_funding_date__gte=one_month_ago
+    ).aggregate(models.Sum('total_funding'))['total_funding__sum'] or 0
+    startups_growth = (
+        (startups_last_month / total_startups * 100) if total_startups > 0 else 0
+    )
+    funding_growth = (
+        (funding_last_month / total_funding * 100) if total_funding > 0 else 0
+    )
+    data = {}
+    data['total_startups'] = total_startups
+    data['total_funding'] = f"${total_funding:,.2f}"
+    data['active_investors'] = active_investors
+    data['jobs_created'] = jobs_created
+    data['month_growth'] = {
+        'startups_growth': f"{startups_growth:.2f}%",
+        'funding_growth': f"{funding_growth:.2f}%"
+    }
+    serializer = StartupStatsSerializer(data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+@extend_schema(
+    methods=['GET'],
+    responses=StartupSerializer(many=True),
+    tags=['Startup User','Investor User']
+)
+@api_view(['GET'])
+def leaderboard(request):
+    limit = int(request.GET.get('limit', 10))
+    # Aggregate points per user
+    users = PointTransaction.objects.values('user__id', 'user__full_name', 'user__last_name').annotate(
+        total_points=models.Sum('points')
+    ).order_by('-total_points')[:limit]
+    
+    results = []
+    for user in range(len(users)):
+        results.append({
+            'user_id': users[user]['user__id'],
+            'full_name': users[user]['user__full_name'],
+            'total_points': users[user]['total_points']
+        })
+        
+    serializer = PointTransactionSerializer(results, many=True)
+    return Response(serializer.data)

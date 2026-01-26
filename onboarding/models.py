@@ -110,8 +110,6 @@ class MemberProfile(models.Model):
     
     def __str__(self):
         return f"Member: {self.user.email}"
-
-
 class InvestorProfile(models.Model):
     """Profile for Investors"""
     INVESTOR_TYPE_CHOICES = [
@@ -130,10 +128,6 @@ class InvestorProfile(models.Model):
     
     def __str__(self):
         return f"Investor: {self.user.email}"
-
-
-
-
 class CofounderProfile(models.Model):
     """Profile for Co-Founders"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cofounder_profile')
@@ -146,8 +140,6 @@ class CofounderProfile(models.Model):
     
     def __str__(self):
         return f"Co-Founder: {self.user.email} at {self.startup_name}"
-
-
 class IncubatorProfile(models.Model):
     """Profile for Startup Incubators"""
     PROGRAM_TYPE_CHOICES = [
@@ -156,7 +148,6 @@ class IncubatorProfile(models.Model):
         ('both', 'Both'),
         ('innovation-hub', 'Innovation Hub'),
     ]
-    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='incubator_profile')
     organization_name = models.CharField(max_length=200)
     organization_website = models.URLField()
@@ -169,8 +160,6 @@ class IncubatorProfile(models.Model):
     
     def __str__(self):
         return f"Incubator: {self.organization_name}"
-
-
 class RevOpsProfile(models.Model):
     """Profile for Revenue Operations"""
     EXPERIENCE_CHOICES = [
@@ -179,7 +168,6 @@ class RevOpsProfile(models.Model):
         ('6-10', '6-10 years'),
         ('10+', '10+ years'),
     ]
-    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='revops_profile')
     current_company = models.CharField(max_length=200)
     current_role = models.CharField(max_length=100)
@@ -190,8 +178,6 @@ class RevOpsProfile(models.Model):
     
     def __str__(self):
         return f"RevOps: {self.user.email}"
-
-
 class CTOProfile(models.Model):
     """Profile for CTOs/Technical Leads"""
     TEAM_LEAD_CHOICES = [
@@ -200,7 +186,6 @@ class CTOProfile(models.Model):
         ('16-30', '16-30 developers'),
         ('30+', '30+ developers'),
     ]
-    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cto_profile')
     current_company = models.CharField(max_length=200)
     current_role = models.CharField(max_length=100)

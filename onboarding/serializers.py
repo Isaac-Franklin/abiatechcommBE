@@ -35,54 +35,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 
-class MemberProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MemberProfile
-        fields = ['profession', 'skills', 'interests', 'linkedin_url']
 
 
-class InvestorProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InvestorProfile
-        fields = ['investor_type', 'investment_range', 'focus_sectors', 
-                  'previous_investments', 'portfolio_size']
 
 
-class StartupProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StartupProfile
-        fields = ['company_name', 'company_website', 'founded_year', 'industry',
-                  'stage', 'team_size', 'funding_stage', 'product_description',
-                  'target_market', 'revenue_model', 'current_revenue']
 
 
-class CofounderProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CofounderProfile
-        fields = ['startup_name', 'role', 'equity_percentage', 'years_with_startup',
-                  'expertise', 'product_description']
 
 
-class IncubatorProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = IncubatorProfile
-        fields = ['organization_name', 'organization_website', 'year_established',
-                  'program_type', 'startups_supported', 'support_services',
-                  'success_stories', 'application_process']
 
 
-class RevOpsProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RevOpsProfile
-        fields = ['current_company', 'current_role', 'years_experience',
-                  'tools_expertise', 'specializations', 'achievements']
 
 
-class CTOProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CTOProfile
-        fields = ['current_company', 'current_role', 'tech_stack',
-                  'team_lead_experience', 'projects_led', 'technical_expertise']
+
 
 
     

@@ -19,7 +19,9 @@ class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(_("email address"), unique=True)
     phone = models.CharField(max_length=15, blank=True)
-
+    avatar = models.URLField(max_length=500, blank=True, null=True)
+    role = models.CharField(max_length=100, default='Developer')
+    bio = models.TextField(blank=True)
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
@@ -44,3 +46,5 @@ class User(AbstractUser):
         verbose_name = "User"
         verbose_name_plural = "Users"
         ordering = ["-created_at"]
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"

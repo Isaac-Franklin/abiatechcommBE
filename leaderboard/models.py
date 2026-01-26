@@ -166,15 +166,7 @@ class PointTransaction(models.Model):
         choices=ACTION_TYPE_CHOICES,
         verbose_name='Action Type'
     )
-    
-    # Reference to related object (optional)
-    content_type = models.ForeignKey(
-        'contenttypes.ContentType',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name='Related Content Type'
-    )
+
     
     object_id = models.PositiveIntegerField(
         null=True,

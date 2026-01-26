@@ -433,18 +433,18 @@ def dashboard_stats(request):
         user_points = 0
         points_change_str = "+0"
     
-    dashboard_stats = {
-        "active_members": active_members,
-        "job_openings": job_openings,
-        "active_startups": active_startups,
-        "user_points": user_points,
-        "changes": {
-            "members_change": members_change_str,
-            "jobs_change": jobs_change_str,
-            "startups_change": startups_change_str,
-            "points_change": points_change_str
-        }
-    }
+    dashboard_stats = {}
+    dashboard_stats['active_members']= active_members
+    dashboard_stats['job_openings']=job_openings
+    dashboard_stats['active_startups']= active_startups
+    dashboard_stats['user_points'] = user_points
+    
+    dashboard_stats['changes'] = {}
+    dashboard_stats['changes']['members_change'] = members_change_str
+    dashboard_stats['changes']['job_change']  = jobs_change_str
+    dashboard_stats['changes']['startups_change'] = startups_change_str
+    dashboard_stats['changes']['points_change'] = points_change_str
+    
     
     serializer = DashboardStatsSerializer(dashboard_stats)
     return Response(serializer.data)
@@ -851,8 +851,6 @@ def course_progress(request, course_id):
     enrollment = get_object_or_404(CourseEnrollment, course=course, user=request.user)
     serializer = EnrolledCourseSerializer(enrollment)
     return Response(serializer.data)
-
-
 @extend_schema(
     methods=['PATCH'],
     parameters=[
@@ -1885,8 +1883,9 @@ def get_bookmarked_jobs(request):
     """Get bookmarked jobs"""
     bookmarked_jobs = Job.objects.filter(
         bookmarks__user=request.user,
-        is_active=True
-    ).exclude(is_expired=True).order_by('-bookmarks__created_at')
+        is_active=True,
+        status= "active"
+    ).order_by('-bookmarks__created_at')
     
     page = request.GET.get('page', 1)
     limit = request.GET.get('limit', 20)
