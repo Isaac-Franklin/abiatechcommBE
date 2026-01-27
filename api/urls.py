@@ -13,7 +13,7 @@ urlpatterns = [
     
     # ==================== DASHBOARD & STATS ====================
     path('dashboard/', views.dashboard_stats, name='dashboard'),
-    path('activities/', views.recent_activities, name='recent-activities'),
+    path('activity/recent/', views.recent_activities, name='recent-activities'),
     path('events/upcoming/', views.upcoming_events, name='upcoming-events'),
     
     # ==================== POSTS ====================
@@ -70,6 +70,7 @@ urlpatterns = [
     path('groups/<int:group_id>/events/', views.group_events, name='group-events'),
     path('groups/<int:group_id>/events/add/', views.create_event, name='create-event'),
     path('groups/<int:group_id>/chat/messages/', views.group_chat_messages, name='group-chat-messages'),
+    path('groups/<int:group_id>/chat/messages/add/', views.create_group_chat_message, name='send-group-chat-message'),
     
     # ==================== JOBS ====================
     path('jobs/', views.list_jobs, name='list-jobs'),
@@ -80,7 +81,6 @@ urlpatterns = [
     path('jobs/bookmarked/', views.get_bookmarked_jobs, name='get-bookmarked-jobs'),
     path('jobs/<int:job_id>/bookmark/', views.toggle_job_bookmark, name='toggle-job-bookmark'),
     path('jobs/bookmarked/list/', views.bookmarked_jobs, name='bookmarked-jobs'),
-    
     # ==================== USER SETTINGS ====================
     path('users/settings/profile/', views.update_profile, name='update-profile'),
     path('users/settings/notifications/', views.update_notifications, name='update-notifications'),

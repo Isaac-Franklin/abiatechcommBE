@@ -1663,6 +1663,41 @@ def group_chat_messages(request, group_id):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_group_chat_message(request, group_id):
+    """Send a message to group chat"""
+    
+    group = get_object_or_404(Group, id=group_id, activity_status='active')
+
+    # Ensure user is a member of the group
+    if not group.members.filter(user=request.user).exists():
+        return Response(
+            {'error': 'You must be a member of this group'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    content = request.data.get('content', '').strip()
+
+    if not content:
+        return Response(
+            {'error': 'Message content is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    message = GroupChatMessage.objects.create(
+        group=group,
+        sender=request.user,
+        content=content
+    )
+
+    serializer = GroupChatMessageSerializer(message)
+
+    return Response(
+        serializer.data,
+        status=status.HTTP_201_CREATED
+    )
+
 # ==================== JOBS ====================
 @extend_schema(
     methods=['GET'],
@@ -2010,6 +2045,24 @@ def update_notifications(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['POST'],
+    request=PostShareSerializer,
+    responses={
+        201: PostShareSerializer,
+        400: OpenApiResponse(description="Validation error")
+    },
+    tags=['Community User']
+)
+@api_view(['POST'])
+def post_share(request):
+    """Share a post"""  
+    serializer = PostShareSerializer(data=request.data)
+    if serializer.is_valid():
+        share = serializer.save(shared_by=request.user)
+        return Response(PostShareSerializer(share).data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 @extend_schema(
     methods=['PATCH'],
     request=PrivacySettingsSerializer,

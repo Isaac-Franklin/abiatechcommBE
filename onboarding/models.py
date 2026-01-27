@@ -118,7 +118,7 @@ class InvestorProfile(models.Model):
         ('corporate', 'Corporate Investor'),
         ('family-office', 'Family Office'),
     ]
-    
+    is_active = models.BooleanField(default=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     investor_type = models.CharField(max_length=20, choices=INVESTOR_TYPE_CHOICES)
     investment_range = models.CharField(max_length=50)

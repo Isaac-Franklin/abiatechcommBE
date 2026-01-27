@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from rest_framework.response import Response
 
+from django.db.models import Sum
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from django.utils.timezone import now
@@ -105,7 +106,7 @@ def group_chat_create_message(request, group_id):
         OpenApiParameter(name='post_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
     ],
     responses=PostSerializer,
-    tags=['Community']
+    tags=['Community User']
 )
 @api_view(['GET'])
 def get_post(request, post_id):
@@ -516,7 +517,7 @@ def startup_stats(request):
     Get startup and fundings stats
     """
     total_startups = Startup.objects.count()
-    total_funding = Startup.objects.aggregate(models.Sum('total_funding'))['total_funding__sum'] or 0
+    total_funding = Startup.objects.aggregate(Sum('total_funding'))['total_funding__sum'] or 0
     active_investors = InvestorProfile.objects.filter(is_active=True).count()
     jobs_created = Job.objects.count()
     # Monthly Growth
@@ -524,7 +525,7 @@ def startup_stats(request):
     startups_last_month = Startup.objects.filter(created_at__gte=one_month_ago).count
     funding_last_month = Startup.objects.filter(
         last_funding_date__gte=one_month_ago
-    ).aggregate(models.Sum('total_funding'))['total_funding__sum'] or 0
+    ).aggregate(Sum('total_funding'))['total_funding__sum'] or 0
     startups_growth = (
         (startups_last_month / total_startups * 100) if total_startups > 0 else 0
     )
@@ -556,46 +557,74 @@ def startup_stats(request):
 def leaderboard(request):
     limit = int(request.GET.get('limit', 10))
     period = request.GET.get('period', 'all-time')
-    
-    # Build query
-    users = PointTransaction.objects.values(
+
+    queryset = PointTransaction.objects.all()
+
+    # Period filtering
+    if period == 'weekly':
+        queryset = queryset.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        )
+    elif period == 'monthly':
+        queryset = queryset.filter(
+            created_at__gte=timezone.now() - timedelta(days=30)
+        )
+
+    # Aggregate points per user
+    aggregated = queryset.values(
         'user__id',
         'user__first_name',
         'user__last_name',
         'user__avatar'
     ).annotate(
-        total_points=models.Sum('points')
-    ).order_by('-total_points')[:limit]
-    
-    # Build results
+        total_points=Sum('points')
+    ).order_by('-total_points')
+
+    top_users = aggregated[:limit]
+
     results = []
     current_user_rank = None
-    
-    for rank, user in enumerate(users, start=1):
-        is_current = user['user__id'] == request.user.id
+
+    for rank, user in enumerate(top_users, start=1):
+        is_current = (
+            request.user.is_authenticated
+            and user['user__id'] == request.user.id
+        )
+
         if is_current:
             current_user_rank = rank
-            
+
         results.append({
             'rank': rank,
             'user': {
                 'id': user['user__id'],
                 'full_name': f"{user['user__first_name']} {user['user__last_name']}",
-                'avatar': user.get('user__avatar')
+                'avatar': user['user__avatar'],
             },
             'total_points': user['total_points'],
-            'is_current_user': is_current
+            'is_current_user': is_current,
         })
-    
-    # Get total users
-    total_users = PointTransaction.objects.values('user__id').distinct().count()
-    
+
+    # Calculate current user rank if not in top N
+    if request.user.is_authenticated and current_user_rank is None:
+        user_points = aggregated.filter(
+            user__id=request.user.id
+        ).first()
+
+        if user_points:
+            higher_count = aggregated.filter(
+                total_points__gt=user_points['total_points']
+            ).count()
+            current_user_rank = higher_count + 1
+
+    total_users = aggregated.count()
+
     response_data = {
         'results': results,
         'current_user_rank': current_user_rank,
         'total_users': total_users,
-        'period': period
+        'period': period,
     }
-    
+
     serializer = LeaderboardResponseSerializer(response_data)
     return Response(serializer.data)
