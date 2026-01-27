@@ -1721,28 +1721,32 @@ def create_group_chat_message(request, group_id):
             {'error': 'You must be a member of this group'},
             status=status.HTTP_403_FORBIDDEN
         )
+    try:
+        content = request.data.get('content', '').strip()
 
-    content = request.data.get('content', '').strip()
+        if not content:
+            return Response(
+                {'error': 'Message content is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    if not content:
-        return Response(
-            {'error': 'Message content is required'},
-            status=status.HTTP_400_BAD_REQUEST
+        message = GroupChatMessage.objects.create(
+            group=group,
+            user=request.user,
+            message=content
         )
 
-    message = GroupChatMessage.objects.create(
-        group=group,
-        user=request.user,
-        message=content
-    )
+        serializer = GroupChatMessageSerializer(message)
 
-    serializer = GroupChatMessageSerializer(message)
-
-    return Response(
-        serializer.data,
-        status=status.HTTP_201_CREATED
-    )
-
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 # ==================== JOBS ====================
 @extend_schema(
     methods=['GET'],

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
 
@@ -48,3 +48,15 @@ class User(AbstractUser):
         ordering = ["-created_at"]
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+class AdminUser(BaseUserManager):
+    
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return super().create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return super().create_superuser(email, password, **extra_fields )
