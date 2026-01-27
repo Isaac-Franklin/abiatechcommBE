@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -305,6 +305,7 @@ def create_startup(request):
     tags=['Investor User']
 )
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_services(request):
     """List marketplace services"""
     services = Service.objects.all()
