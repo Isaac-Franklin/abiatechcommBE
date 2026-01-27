@@ -217,8 +217,14 @@ def delete_startup_profile(request):
 )
 @api_view(['GET'])
 def get_startup_profile(request):
-    """Get user's startup profile"""
-    profile = get_object_or_404(StartupProfile, user=request.user)
+    """Get startup profile of the logged-in user"""
+    try:
+        profile = StartupProfile.objects.get(user=request.user)
+    except StartupProfile.DoesNotExist:
+        return Response(
+            {"detail": "Startup profile not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
     serializer = StartupProfileSerializer(profile)
     return Response(serializer.data)
 @extend_schema(
