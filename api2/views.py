@@ -72,34 +72,34 @@ def update_startup(request, id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-@extend_schema(
-    methods=['POST'],
-    parameters=[
-        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
-    ],
-    request=GroupChatMessageSerializer,
-    responses={
-        201: GroupChatMessageSerializer,
-        403: OpenApiResponse(description="Forbidden"),
-        404: OpenApiResponse(description="Group not found")
-    },
-)
-@api_view(['POST'])
-def group_chat_create_message(request, group_id):
-    """Create a new chat message in a group"""
-    group = get_object_or_404(group_models.Group, id=group_id)
+# @extend_schema(
+#     methods=['POST'],
+#     parameters=[
+#         OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+#     ],
+#     request=GroupChatMessageSerializer,
+#     responses={
+#         201: GroupChatMessageSerializer,
+#         403: OpenApiResponse(description="Forbidden"),
+#         404: OpenApiResponse(description="Group not found")
+#     },
+# )
+# @api_view(['POST'])
+# def group_chat_create_message(request, group_id):
+#     """Create a new chat message in a group"""
+#     group = get_object_or_404(group_models.Group, id=group_id)
     
-    if not group.members.filter(id=request.user.id).exists():
-        return Response(
-            {"detail": "You are not a member of this group."},
-            status=status.HTTP_403_FORBIDDEN
-        )
+#     if not group.members.filter(id=request.user.id).exists():
+#         return Response(
+#             {"detail": "You are not a member of this group."},
+#             status=status.HTTP_403_FORBIDDEN
+#         )
     
-    serializer = GroupChatMessageSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(sender=request.user, group=group)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = GroupChatMessageSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(sender=request.user, group=group)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 @extend_schema(
     methods=['GET'],
     parameters=[

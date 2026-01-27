@@ -720,6 +720,9 @@ class GroupChatMessageSerializer(serializers.ModelSerializer):
             'created_at', 'is_read'
         ]
         read_only_fields = ['user', 'created_at', 'is_read']
+    def create(self, validated_data):
+        # Ensure we're using the correct field names
+        return GroupChatMessage.objects.create(**validated_data)
         
 class NotificationSettingsSerializer(serializers.ModelSerializer):
     """Serializer for notification settings (PATCH /api/users/settings/notifications/)"""
