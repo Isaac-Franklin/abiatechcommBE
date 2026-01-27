@@ -1663,6 +1663,16 @@ def group_chat_messages(request, group_id):
         'page': int(page),
         'total_pages': paginator.num_pages
     })
+@extend_schema(
+    methods=['GET'],
+    parameters=[
+        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=50)
+    ],
+    responses=GroupChatMessageSerializer(many=True),
+    tags=['Community User']
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_group_chat_message(request, group_id):
@@ -1687,7 +1697,7 @@ def create_group_chat_message(request, group_id):
 
     message = GroupChatMessage.objects.create(
         group=group,
-        sender=request.user,
+        user=request.user,
         content=content
     )
 
