@@ -152,6 +152,20 @@ def update_startup_profile(request):
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 @extend_schema(
+    methods=['DELETE'],
+    responses={
+        204: OpenApiResponse(description="Startup profile deleted successfully."),
+        404: OpenApiResponse(description="Profile not found")
+    },
+    tags=['Startup User']
+)
+@api_view(['DELETE'])
+def delete_startup_profile(request):
+    """Delete startup profile"""
+    profile = get_object_or_404(StartupProfile, user=request.user)
+    profile.delete()
+    return Response({"detail": "Startup profile deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+@extend_schema(
     methods=['GET'],
     responses=StartupProfileSerializer,
     tags=['Startup User']
@@ -162,6 +176,34 @@ def get_startup_profile(request):
     profile = get_object_or_404(StartupProfile, user=request.user)
     serializer = StartupProfileSerializer(profile)
     return Response(serializer.data)
+@extend_schema(
+    methods=['DELETE'],
+    parameters=[
+        OpenApiParameter(name='id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    responses={
+        204: OpenApiResponse(description="Startup deleted successfully."),
+        403: OpenApiResponse(description="Forbidden"),
+        404: OpenApiResponse(description="Startup not found"),
+    },
+    tags=['Startup User']
+)
+@api_view(['DELETE'])
+def delete_startup(request, id):
+    """Delete a startup"""
+    startup = get_object_or_404(Startup, id=id)
+
+    if startup.owner != request.user:
+        return Response(
+            {"detail": "You don't have permission to delete this startup."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    startup.delete()
+    return Response(
+        {"detail": "Startup deleted successfully."},
+        status=status.HTTP_204_NO_CONTENT
+    )
 @extend_schema(
     methods=['GET'],
     responses=StartupSerializer(many=True),
@@ -268,6 +310,61 @@ def service_detail(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     serializer = ServiceSerializer(service, context={'request': request})
     return Response(serializer.data)
+@extend_schema(
+    methods=['PATCH'],
+    parameters=[
+        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    request=ServiceSerializer,
+    responses={
+        200: ServiceSerializer,
+        403: OpenApiResponse(description="Forbidden"),
+        404: OpenApiResponse(description="Service not found")
+    },
+    tags=['Investor User']
+)
+@api_view(['PATCH'])
+def update_service(request, service_id):
+    """Update a service"""
+    service = get_object_or_404(Service, id=service_id)
+    if service.provider != request.user:
+        return Response(
+            {"detail": "You don't have permission to update this service."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    serializer = ServiceSerializer(service, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['DELETE'],
+    parameters=[
+        OpenApiParameter(name='service_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    responses={
+        204: OpenApiResponse(description="Service deleted successfully."),
+        403: OpenApiResponse(description="Forbidden"),
+        404: OpenApiResponse(description="Service not found")
+    },
+    tags=['Investor User']
+)
+@api_view(['DELETE'])
+def delete_service(request, service_id):
+    """Delete a service"""
+    service = get_object_or_404(Service, id=service_id)
+    
+    if service.provider != request.user:
+        return Response(
+            {"detail": "You don't have permission to delete this service."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    service.delete()
+    return Response(
+        {"detail": "Service deleted successfully."},
+        status=status.HTTP_204_NO_CONTENT
+    )
 @extend_schema(
     methods=['POST'],
     request=ServiceSerializer,
