@@ -84,7 +84,7 @@ class GroupChatMessage(models.Model):
     group = models.ForeignKey(Group, related_name='chat_messages', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='group_messages', on_delete=models.CASCADE)
     message = models.TextField()
-    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES, default='text')
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     read_by = models.ManyToManyField(User, related_name='read_messages', blank=True)
