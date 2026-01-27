@@ -56,4 +56,22 @@ class StartupProfileSerializer(serializers.ModelSerializer):
         model = StartupProfile
         fields = "__all__"
         read_only_fields = ['id', 'user']
-        
+class LeaderboardUserSerializer(serializers.Serializer):
+    """User info for leaderboard"""
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    avatar = serializers.URLField(required=False, allow_null=True)
+    user_type = serializers.CharField(required=False)
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    """Single leaderboard entry"""
+    rank = serializers.IntegerField()
+    user = LeaderboardUserSerializer(read_only=True)
+    total_points = serializers.IntegerField()
+    is_current_user = serializers.BooleanField(default=False)
+
+class LeaderboardResponseSerializer(serializers.Serializer):
+    """Complete leaderboard response"""
+    results = LeaderboardEntrySerializer(many=True)
+    current_user_rank = serializers.IntegerField(required=False, allow_null=True)
+    total_users = serializers.IntegerField()

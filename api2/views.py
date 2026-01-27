@@ -21,6 +21,7 @@ from django.utils import timezone
 from jobs.models import Job
 # Serializers — add ServiceSerializer and ServiceReviewSerializer here (api.serializers used above)
 from .serializers import (
+    LeaderboardResponseSerializer,
     PointTransactionSerializer,
     StartupSerializer,
     StartupProfileSerializer,
@@ -401,24 +402,58 @@ def startup_stats(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 @extend_schema(
     methods=['GET'],
-    responses=StartupSerializer(many=True),
-    tags=['Startup User','Investor User']
+    parameters=[
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=10),
+        OpenApiParameter(name='period', type=OpenApiTypes.STR, default='all-time',
+                         description="Time period for leaderboard (e.g., all-time, monthly)")
+    ],
+    responses=LeaderboardResponseSerializer,
+    tags=['Leaderboard']
 )
 @api_view(['GET'])
 def leaderboard(request):
     limit = int(request.GET.get('limit', 10))
-    # Aggregate points per user
-    users = PointTransaction.objects.values('user__id', 'user__full_name', 'user__last_name').annotate(
+    period = request.GET.get('period', 'all-time')
+    
+    # Build query
+    users = PointTransaction.objects.values(
+        'user__id',
+        'user__first_name',
+        'user__last_name',
+        'user__avatar'
+    ).annotate(
         total_points=models.Sum('points')
     ).order_by('-total_points')[:limit]
     
+    # Build results
     results = []
-    for user in range(len(users)):
+    current_user_rank = None
+    
+    for rank, user in enumerate(users, start=1):
+        is_current = user['user__id'] == request.user.id
+        if is_current:
+            current_user_rank = rank
+            
         results.append({
-            'user_id': users[user]['user__id'],
-            'full_name': users[user]['user__full_name'],
-            'total_points': users[user]['total_points']
+            'rank': rank,
+            'user': {
+                'id': user['user__id'],
+                'full_name': f"{user['user__first_name']} {user['user__last_name']}",
+                'avatar': user.get('user__avatar')
+            },
+            'total_points': user['total_points'],
+            'is_current_user': is_current
         })
-        
-    serializer = PointTransactionSerializer(results, many=True)
+    
+    # Get total users
+    total_users = PointTransaction.objects.values('user__id').distinct().count()
+    
+    response_data = {
+        'results': results,
+        'current_user_rank': current_user_rank,
+        'total_users': total_users,
+        'period': period
+    }
+    
+    serializer = LeaderboardResponseSerializer(response_data)
     return Response(serializer.data)
