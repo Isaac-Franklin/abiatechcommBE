@@ -1733,7 +1733,7 @@ def create_group_chat_message(request, group_id):
     message = GroupChatMessage.objects.create(
         group=group,
         user=request.user,
-        content=content
+        message=content
     )
 
     serializer = GroupChatMessageSerializer(message)
