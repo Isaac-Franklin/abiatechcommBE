@@ -704,7 +704,10 @@ class GroupEventSerializer(serializers.ModelSerializer):
         if value < timezone.now():
             raise serializers.ValidationError("Event date cannot be in the past.")
         return value
-
+class SettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields = "__all__"
 
 class GroupChatMessageSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)

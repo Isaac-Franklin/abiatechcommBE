@@ -36,7 +36,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from rest_framework.response import Response
-from .serializers import (
+from .serializers import (SettingsSerializer,           
     NotificationSettingsSerializer, DashboardStatsSerializer,
     StartupProfileSerializer, AchievementSerializer, PrivacySettingsSerializer, PasswordChangeSerializer,
     ChallengeSerializer, ServiceSerializer, ServiceContactSerializer, ServiceReviewSerializer,
@@ -1666,6 +1666,41 @@ def group_chat_messages(request, group_id):
 @extend_schema(
     methods=['GET'],
     parameters=[
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20),
+        OpenApiParameter(name='job_type', type=OpenApiTypes.STR),
+        OpenApiParameter(name='location', type=OpenApiTypes.STR),
+        OpenApiParameter(name='is_remote', type=OpenApiTypes.BOOL),
+        OpenApiParameter(name='search', type=OpenApiTypes.STR)
+    ],
+    responses=JobListSerializer(many=True),
+    tags=['Community User']
+)
+@api_view(['GET'])
+def all_posts(request):
+    """Get all posts"""
+    posts = Post.objects.all().order_by('-created_at')
+    page = request.GET.get('page', 1)
+    limit = min(int(request.GET.get('limit', 20)), 100)
+    
+    paginator = Paginator(posts, limit)
+    
+    try:
+        posts_page = paginator.page(page)
+    except:
+        posts_page = paginator.page(1)
+    
+    serializer = PostSerializer(posts_page, many=True, context={'request': request})
+    
+    return Response({
+        'results': serializer.data,
+        'total': paginator.count,
+        'page': int(page),
+        'total_pages': paginator.num_pages
+    })
+@extend_schema(
+    methods=['POST'],
+    parameters=[
         OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH),
         OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
         OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=50)
@@ -2038,6 +2073,19 @@ def update_profile(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    methods=['PATCH'],
+    request=SettingsSerializer,
+    responses=SettingsSerializer,
+    tags=['Community User']
+)
+@api_view(['GET'])
+def get_settings(request):
+    """Get user settings"""
+    settings, created = UserSettings.objects.get_or_create(user=request.user)
+    serializer = SettingsSerializer(settings)
+    return Response(serializer.data)
 @extend_schema(
     methods=['PATCH'],
     request=NotificationSettingsSerializer,

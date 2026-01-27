@@ -71,7 +71,7 @@ urlpatterns = [
     path('groups/<int:group_id>/events/add/', views.create_event, name='create-event'),
     path('groups/<int:group_id>/chat/messages/', views.group_chat_messages, name='group-chat-messages'),
     path('groups/<int:group_id>/chat/messages/add/', views.create_group_chat_message, name='send-group-chat-message'),
-    
+    path('posts/', views.all_posts, name='all-posts'),
     # ==================== JOBS ====================
     path('jobs/', views.list_jobs, name='list-jobs'),
     path('jobs/<int:job_id>/', views.job_detail, name='job-detail'),
@@ -82,6 +82,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/bookmark/', views.toggle_job_bookmark, name='toggle-job-bookmark'),
     path('jobs/bookmarked/list/', views.bookmarked_jobs, name='bookmarked-jobs'),
     # ==================== USER SETTINGS ====================
+    path('users/settings/', views.get_settings, name='get-user-settings'),
     path('users/settings/profile/', views.update_profile, name='update-profile'),
     path('users/settings/notifications/', views.update_notifications, name='update-notifications'),
     path('users/settings/privacy/', views.update_privacy, name='update-privacy'),
