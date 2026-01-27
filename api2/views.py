@@ -13,7 +13,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParamet
 from drf_spectacular.types import OpenApiTypes
 from django.utils.timezone import now
 from leaderboard.models import PointTransaction
-from groups import models
+from groups import models as group_models
 from startups.models import Startup, StartupProfile, StartupContact
 from onboarding.models import InvestorProfile   
 from marketplace.models import Service, ServiceReview, ServiceContact
@@ -87,7 +87,7 @@ def update_startup(request, id):
 @api_view(['POST'])
 def group_chat_create_message(request, group_id):
     """Create a new chat message in a group"""
-    group = get_object_or_404(models.Group, id=group_id)
+    group = get_object_or_404(group_models.Group, id=group_id)
     
     if not group.members.filter(id=request.user.id).exists():
         return Response(
