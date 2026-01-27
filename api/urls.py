@@ -2,6 +2,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from . import views
+from api2 import views as api2_views
 
 urlpatterns = [
     # ==================== AUTHENTICATION ====================
@@ -17,6 +18,7 @@ urlpatterns = [
     
     # ==================== POSTS ====================
     path('posts/add/', views.add_post, name='add-post'),
+    path('posts/<int:post_id>/', api2_views.get_post, name='get-post'),
     path('posts/<int:post_id>/like/', views.like_post, name='like-post'),
     path('posts/<int:post_id>/unlike/', views.unlike_post, name='unlike-post'),
     path('posts/<int:post_id>/comments/', views.get_post_comments, name='get-post-comments'),
@@ -55,7 +57,6 @@ urlpatterns = [
     path('users/profile/projects/add/', views.create_project, name='create-project'),
     path('users/profile/projects/<int:project_id>/update/', views.update_project, name='update-project'),
     path('users/profile/projects/<int:project_id>/delete/', views.delete_project, name='delete-project'),
-    
     # ==================== GROUPS ====================
     path('groups/', views.list_groups, name='list-groups'),
     path('groups/my-groups/', views.my_groups, name='my-groups'),

@@ -19,6 +19,7 @@ from marketplace.models import Service, ServiceReview, ServiceContact
 from datetime import timedelta
 from django.utils import timezone
 from jobs.models import Job
+from api.serializers import GroupChatMessageSerializer,PostSerializer
 # Serializers — add ServiceSerializer and ServiceReviewSerializer here (api.serializers used above)
 from .serializers import (
     LeaderboardResponseSerializer,
@@ -31,6 +32,7 @@ from .serializers import (
     ServiceContactSerializer,
     StartupStatsSerializer,  
 )
+from community.models import Post
 # Create your views here.
 # ==================== STARTUPS ====================
 def is_startup_owner(user, startup):
@@ -69,6 +71,48 @@ def update_startup(request, id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['POST'],
+    parameters=[
+        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    request=GroupChatMessageSerializer,
+    responses={
+        201: GroupChatMessageSerializer,
+        403: OpenApiResponse(description="Forbidden"),
+        404: OpenApiResponse(description="Group not found")
+    },
+)
+@api_view(['POST'])
+def group_chat_create_message(request, group_id):
+    """Create a new chat message in a group"""
+    group = get_object_or_404(models.Group, id=group_id)
+    
+    if not group.members.filter(id=request.user.id).exists():
+        return Response(
+            {"detail": "You are not a member of this group."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    serializer = GroupChatMessageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(sender=request.user, group=group)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['GET'],
+    parameters=[
+        OpenApiParameter(name='post_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    responses=PostSerializer,
+    tags=['Community']
+)
+@api_view(['GET'])
+def get_post(request, post_id):
+    """Get post details"""
+    post = get_object_or_404(Post, id=post_id)
+    serializer = PostSerializer(post, context={'request': request})
+    return Response(serializer.data)
 @extend_schema(
     methods=['POST'],
     parameters=[
