@@ -614,7 +614,7 @@ def like_post(request, post_id):
     
     return Response({
         'liked': liked,
-        'likes_count': post.likes.count()
+        'likes_count': post.like_count
     })
 
 
