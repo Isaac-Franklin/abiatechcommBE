@@ -28,4 +28,19 @@ urlpatterns = [
     path('marketplace/services/<int:service_id>/delete/', views.delete_service, name='delete-service'),
     # ==================== LEADERBOARD ====================
     path('leaderboard/', views.leaderboard, name='leaderboard'),
+    # ===================Admin===============================
+    path("admin_signup/", views.admin_signup, name="admin_signup"),
+    path("admin_signin/", views.admin_signin, name="admin_signin"),
+    path("admin/get_user_details/<int:user_id>/", views.get_user_details, name="get_user_details"),
+    path('admin/update_user_details/<int:user_id>/', views.update_user_details, name="update_user_details"),
+    path('admin/delete_user/<int:user_id>/',views.delete_user, name="delete_user"),
+    path('admin/suspend_user/<int:user_id>/', views.suspend_user, name="suspend_user"),
+    path('admin/activate_user/<int:user_id>/',views.activate_user, name="activate_user"),
+    path("admin/export_users/", views.export_users, name='export_users'),
+    path('admin/user_list/', views.user_list, name='user_list'),
+    path('admin/message/send/<int:group_id>/', views.admin_message_send, name="admin_message_send"),
+    path('admin/message/history/', views.admin_messages_history, name="admin_message_history"),
+    path('admin_overview/', views.admin_overview, name="admin_overview"),
+    path('admin/analytics/users/', views.admin_get_users_analytics,name="admin_get_users_analytics"),
+    path('admin/analytics/content/', views.admin_get_content_analytics, name="admin_get_analytics_content")
 ]

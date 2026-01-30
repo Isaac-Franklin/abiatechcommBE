@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,7 +50,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'accounts',
     'api',
+    'api_chat',
     'api2',
+    'channels',
     'community',
     'groups',
     'jobs',
@@ -91,7 +94,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'abiatechcomm_BE.wsgi.application'
-
+ASGI_APPLICATION = "abiatechcomm_BE.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

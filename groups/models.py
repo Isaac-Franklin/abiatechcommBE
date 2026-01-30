@@ -85,12 +85,32 @@ class GroupChatMessage(models.Model):
     user = models.ForeignKey(User, related_name='group_messages', on_delete=models.CASCADE)
     message = models.TextField()
     message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES, default='text')
+    file = models.FileField(upload_to='group_chat_files/', blank=True, null=True)
+    image = models.ImageField(upload_to='group_chat_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     read_by = models.ManyToManyField(User, related_name='read_messages', blank=True)
-    
+    class Meta:
+        ordering = ['created_at']
     def __str__(self):
+        if self.message_type == 'text':
+            return f"{self.user.username}: {self.message[:30]}"
+        elif self.message_type == 'file':
+            return f"{self.user.username} sent a file. [{self.file}]"
+        elif self.message_type == 'image':
+            return f"{self.user.username} sent an image. [{self.image}]"
         return f"{self.user.username}: {self.message[:30]}"
+    @property
+    def file_url(self):
+        if self.file:
+            return self.file.url
+        return None
+    @property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return None
+    
 class GroupEvent(models.Model):
     group = models.ForeignKey('Group', related_name='events', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -120,3 +140,5 @@ class GroupEvent(models.Model):
     
     class Meta:
         ordering = ['date']  # Order by date by default
+
+    

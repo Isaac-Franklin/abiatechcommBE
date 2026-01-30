@@ -1,29 +1,36 @@
+import csv
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser,JSONParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from rest_framework.response import Response
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Sum
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from django.utils.timezone import now
 from leaderboard.models import PointTransaction
 from groups import models as group_models
+from groups.models import GroupChatMessage,GroupMember, Group,GroupDiscussion,GroupEvent
 from startups.models import Startup, StartupProfile, StartupContact
 from onboarding.models import InvestorProfile   
 from marketplace.models import Service, ServiceReview, ServiceContact
 from datetime import timedelta
 from django.utils import timezone
 from jobs.models import Job
-from api.serializers import GroupChatMessageSerializer,PostSerializer
-# Serializers — add ServiceSerializer and ServiceReviewSerializer here (api.serializers used above)
+from accounts.permissons import IsAdminUserType
+from api.serializers import GroupChatMessageSerializer,PostSerializer, UserSerializer
 from .serializers import (
+    AdminUserSerializer,
+    SuspendedUserSerializer,
     LeaderboardResponseSerializer,
+    GroupChatMessageSerializer,
+    AdminOverviewSerializer,
+    AdminUserAnalyticsSerializer,
     PointTransactionSerializer,
     StartupSerializer,
     StartupProfileSerializer,
@@ -32,10 +39,14 @@ from .serializers import (
     ServiceReviewSerializer,
     ServiceContactSerializer,
     StartupStatsSerializer,  
+    AdminGetContentAnalytics,
 )
-from community.models import Post
+from django.contrib.auth import get_user_model
+from community.models import Post,PostComment,Project
+
 # Create your views here.
 # ==================== STARTUPS ====================
+User = get_user_model()
 def is_startup_owner(user, startup):
     """Check if user is the owner of the startup"""
     try:
@@ -605,4 +616,478 @@ def leaderboard(request):
     }
 
     serializer = LeaderboardResponseSerializer(response_data)
+    return Response(serializer.data)
+#==========================Admin===============================================#
+@extend_schema(
+    methods=['POST'],
+    request=AdminUserSerializer,
+    responses={
+        201: AdminUserSerializer,
+        400: OpenApiResponse(description="Validation error")
+    },
+    tags=['Admin User']
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def admin_signup(request):
+    data = request.data
+    serializer = AdminUserSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['POST'],
+    parameters=[
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20)
+    ],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def admin_signin(request):
+    email = request.data.get("email")
+    password = request.data.get("password")
+    try:
+        user = User.objects.get(email=email, user_type=User.UserType.ADMIN)
+        if user.check_password(password):
+            print("Password valid")
+            refresh = RefreshToken.for_user(user)
+            print("Token generated")
+            serializer = AdminUserSerializer(user)
+            print("Serializer created")
+            print(user.is_admin())
+            response = {
+                "status": 200,
+                "message": "Login successful",
+                "is_admin": user.is_admin(),
+                "token": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh)
+                },
+                "data": serializer.data
+            }
+            print("Response ready")
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            print("Invalid password")
+            return Response(
+                {"detail": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+    except User.DoesNotExist:
+        print("Admin user not found")
+        return Response(
+            {"detail": "Admin user not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            {"detail": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+@extend_schema(
+    methods=['GET'],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['GET'])
+@permission_classes([IsAdminUserType])
+def get_user_details(request, user_id):
+    """Get user details by ID"""
+    user = get_object_or_404(User, id=user_id)
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
+@extend_schema(
+    methods=['PATCH'],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['PATCH'])
+@permission_classes([IsAdminUserType])
+def update_user_details(request, user_id):
+    """Update user details by ID"""
+    user = get_object_or_404(User, id=user_id)
+    serializer = UserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['DELETE'],
+    responses={
+        204: OpenApiResponse(description="User deleted successfully."),
+        404: OpenApiResponse(description="User not found")
+    },
+    tags=['Admin User']
+)
+@api_view(['DELETE'])
+@permission_classes([IsAdminUserType])
+def delete_user(request, user_id):
+    """"Delete a user by ID"""
+    user = get_object_or_404(User, id=user_id)
+    user.status = 'deleted' 
+    user.delete()
+    return Response(
+        "User deleted successfully.",
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+@extend_schema(
+    methods=['POST'],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['POST'])
+@permission_classes([IsAdminUserType])
+def suspend_user(request, user_id):
+    """Suspend a user by ID"""
+    if request.user.id == user_id:
+        return Response(
+            {"detail": "You cannot suspend yourself."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    body = request.data.get('reason', 'No reason provided')
+    serializer = SuspendedUserSerializer(data={'reason': body, 'suspended_at': now()})
+    if serializer.is_valid():
+        user = get_object_or_404(User, id=user_id)
+        user.status = 'suspended'
+        user.save()
+        return Response(
+            {"detail": f"User {user.email} suspended successfully."},
+            status=status.HTTP_200_OK
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@extend_schema(
+    methods=['POST'],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['POST'])
+@permission_classes([IsAdminUserType])
+def activate_user(request, user_id):
+    """Activate a suspended user by ID"""
+    user = get_object_or_404(User, id=user_id)
+    if user.status != 'suspended':
+        return Response(
+            {"detail": "User is not suspended."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    user.status = 'active'
+    user.save()
+    return Response(
+        {"detail": f"User {user.email} activated successfully."},
+        status=status.HTTP_200_OK
+    )
+@extend_schema(
+    methods=['GET'],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['GET'])
+@permission_classes([IsAdminUserType])
+def export_users(request):
+    if not request.user.is_admin():
+        return Response(
+            {"detail": "You don't have permission to perform this action."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    user_type =  request.data.get('user_type')
+    is_active = request.data.get('is_active')
+    users =[]
+    if user_type:
+        users = User.objects.filter(user_type=user_type)
+    elif is_active:
+        users = User.objects.filter(is_active=is_active)        
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="users_export.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        'ID','Email','Full Name','User Type','Phone','Date Joined'
+    ])
+    # CSV rows
+    for user in users:
+        writer.writerow([user.id,user.email,user.get_full_name(),user.user_type,user.phone,user.is_active,
+        user.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+    return response
+@extend_schema(
+    methods=['GET'],
+    parameters=[
+        OpenApiParameter(name='page', type=OpenApiTypes.INT, default=1),
+        OpenApiParameter(name='limit', type=OpenApiTypes.INT, default=20),
+        OpenApiParameter(name='user_type', type=OpenApiTypes.STR),
+        OpenApiParameter(name='status', type=OpenApiTypes.STR),
+        OpenApiParameter(name='search', type=OpenApiTypes.STR)
+    ],
+    responses=AdminUserSerializer(many=True),
+    tags=['Admin User']
+)
+@api_view(['GET'])
+@permission_classes([IsAdminUserType])
+def user_list(request):
+    """List all admin users"""
+    if not request.user.is_admin():
+        return Response(
+            {"detail": "You don't have permission to perform this action."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 20))
+    user_type= request.GET.get('user_type')
+    status_filter = request.GET.get('status')
+    search = request.GET.get('search')
+    
+    users = User.objects.all()
+    #filter by user type
+    if user_type:
+        users = users.filter(user_type=user_type)
+    #filter by status
+    if status_filter:
+        users = users.filter(status=status_filter)
+    # Search functionality
+    if search:
+        users = users.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(email__icontains=search)
+        )
+    pageinator = Paginator(users.order_by('-created_at'), limit)
+    try:
+        users_page = pageinator.page(page)
+    except:
+        users_page = pageinator.page(1) 
+        
+    serializer = UserSerializer(users_page, many=True)
+    return Response({
+        'results': serializer.data,
+        'total': pageinator.count,
+        'page': page,
+        'total_pages': pageinator.num_pages
+    })
+@extend_schema(
+    methods=['POST'],
+    parameters=[
+        OpenApiParameter(name='group_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)
+    ],
+    request={
+    'multipart/form-data': {
+        'type': 'object',
+        'properties': {
+            'content': {'type': 'string'},
+            'message_type': {'type': 'string', 'enum': ['text', 'file', 'image']},
+            'file': {'type': 'string', 'format': 'binary'},
+            'image': {'type': 'string', 'format': 'binary'}
+            }
+        }
+    },
+    responses=GroupChatMessageSerializer,
+    tags=['Admin User']
+)
+@api_view(['POST'])
+@permission_classes([IsAdminUserType])
+@parser_classes([MultiPartParser,FormParser])
+def admin_message_send(request, group_id):
+    print(f'group is {group_id}')
+    group = get_object_or_404(group_models.Group,id=group_id,activity_status= "active")
+    print(f"grooup has a groi {group}")
+    group_member = GroupMember.objects.filter(group=group)
+    print('error')
+    if not group_member.filter(user=request.user).exists():
+        return Response({"detail":"You are not a member of the group"}, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        print("request",request.data.get('content'))
+        
+        content = request.data.get('content')
+        message_type =request.data.get('message_type')
+        file_upload = request.FILES.get("file")
+        image_upload = request.FILES.get('image')
+        if message_type =='text':
+            if not content:
+                return Response(
+                    {'error':"The content is required for text message"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            message= GroupChatMessage.objects.create(
+                group=group,
+                user=request.user,
+                message=content
+            )
+        elif message_type == "image":
+            if not image_upload:
+                return Response(
+                    {"error":"The file is required"},
+                    status=400
+                )
+            if image_upload.size > 5 * 1024 *1024:
+                return Response(
+                    {'error': "image size must be less 5MB"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            allowed = (".png", ".jpeg",".gif",".webp",".docx")
+            if not image_upload.name.lower.endswith(allowed):
+                return Response(
+                    {'error':'Invalid image format, Allowed format are png, jpeg, gif, webp'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            message = GroupChatMessage.objects.create(
+                group=group, 
+                user=request.user,
+                message=content,
+                message_type=message_type,
+                image= image_upload
+            )
+        elif message_type == 'file':
+            if not file_upload:
+                return Response(
+                    {'error': 'File is required for file messages'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate file size (10MB limit)
+            if file_upload.size > 10 * 1024 * 1024:
+                return Response(
+                    {'error': 'File must be less than 10MB'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            message = GroupChatMessage.objects.create(
+                group=group,
+                user=request.user,
+                message=content if content else file_upload.name,  # Use filename if no description
+                message_type='file',
+                file=file_upload
+            )
+        else:
+            return Response(
+                {'error': 'Invalid message_type. Must be: text, file, or image'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = GroupChatMessageSerializer(message, context={'request': request})
+        
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )    
+@extend_schema(
+    methods=["GET"],
+    parameters=[OpenApiParameter(name='page', type=OpenApiTypes.INT),
+      OpenApiParameter(name="limit", type=OpenApiTypes.INT)],
+     tags=['Admin User']
+)    
+@api_view(['GET']) 
+@permission_classes([IsAdminUserType])
+def admin_messages_history(request):
+    messages = GroupChatMessage.objects.filter(user=request.user).order_by('-created_at')
+    page = request.GET.get('page',1)
+    limit= request.GET.get('limit',30)
+    try:
+        page= int(page)
+        limit= int(limit)
+    except ValueError:
+        return Response(
+            {"error":"page and limit must be an integer"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    paginator = Paginator(messages, limit)
+    try:
+        message_page = paginator.page(page)
+    except:
+        message_page= paginator.page(1)
+
+    serializer = GroupChatMessageSerializer(message_page, many=True,context={"request":request})
+    return Response(
+        {
+            "result":serializer.data,
+            "total":paginator.count,
+            "page":page,
+            "total_num":paginator.num_pages
+        }
+    )
+@extend_schema(
+    methods=['GET'],
+    responses=AdminOverviewSerializer,
+    tags=['Admin User']
+)
+@api_view(['GET']) 
+@permission_classes([IsAdminUserType])
+def admin_overview(request):
+    now = timezone.now()
+    total_users = User.objects.count()
+    total_content = Post.objects.count()
+    new_users_7_days = User.objects.filter(created_at__gte=now-timedelta(days=7)).count()
+    active_users_30_days = User.objects.filter(last_login__gte=now-timedelta(days=30)).count()
+    
+    overview = {}
+    overview['total_users']= total_users
+    overview['total_content'] = total_content
+    overview["new_users_7_days"] = new_users_7_days
+    overview["active_users_30_days"] = active_users_30_days
+    
+    serializer = AdminOverviewSerializer(overview, context={"request":request})
+    return Response(serializer.data)
+
+@extend_schema(
+    methods=['GET'],
+    responses=dict,
+    tags=['Admin User']
+)
+@api_view(['GET']) 
+@permission_classes([IsAdminUserType])
+def admin_get_users_analytics(request):
+    period = request.GET.get("period","monthly")
+    now = timezone.now()
+    period_mapping = {
+        "daily":1,
+        "weekly":7,
+        "monthly":30
+    }
+    days = period_mapping.get(period, 30)
+    data = {}
+    data['period'] = period
+    data['new_users'] = User.objects.filter(created_at__gte=now-timedelta(days=days)).count()
+    data['active_users'] = User.objects.filter(created_at__gte=now-timedelta(days=days)).count()
+    data['total_users'] = User.objects.count()
+    serializer = AdminUserAnalyticsSerializer(data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+@extend_schema(
+    methods=['GET'],
+    responses=dict,
+    tags=['Admin User']
+)
+@api_view(['GET']) 
+@permission_classes([IsAdminUserType])
+def admin_get_content_analytics(request):
+    period = request.GET.get("peroid", "monthly")
+    now =timezone.now()
+    period_mapping= {
+        "daily":1,
+        "weekly":7,
+        "monthly":30
+    }
+    days = period_mapping.get(period, 30)
+    data = {}
+    data['posts'] = Post.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['posts_comments'] = PostComment.objects.filter(created_at__gte=now-timedelta(days=days))
+    data["groups"] = Group.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['groups_discussions']=GroupDiscussion.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['groups_events'] = GroupDiscussion.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['projects'] = Project.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['jobs'] = Job.objects.filter(created_at__gte=now-timedelta(days=days))
+    data['startup'] = Startup.objects.filter(created_at__gte=now-timedelta(days=days))
+    
+    serializer = AdminGetContentAnalytics(data, many=True)
     return Response(serializer.data)

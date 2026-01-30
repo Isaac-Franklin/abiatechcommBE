@@ -720,11 +720,7 @@ def create_comment(request, post_id):
     
     serializer = PostCommentSerializer(comment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-
 # ==================== LEARNING ====================
-
 @extend_schema(
     methods=['GET'],
     responses=EnrolledCourseSerializer(many=True),
@@ -1723,7 +1719,7 @@ def create_group_chat_message(request, group_id):
         )
     try:
         content = request.data.get('content', '').strip()
-
+        message_type = request.data.get('message_type')
         if not content:
             return Response(
                 {'error': 'Message content is required'},
@@ -1733,10 +1729,12 @@ def create_group_chat_message(request, group_id):
         message = GroupChatMessage.objects.create(
             group=group,
             user=request.user,
-            message=content
+            message=content,
+            message_type=message_type
         )
 
         serializer = GroupChatMessageSerializer(message)
+        serializer.save()
 
         return Response(
             serializer.data,

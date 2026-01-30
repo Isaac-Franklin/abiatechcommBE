@@ -3,24 +3,24 @@ import os
 from .base import *
 from datetime import timedelta
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nwoemma$default',  # Format: username$dbname
-        'USER': 'nwoemma',
-        'PASSWORD': 'Emmy77@gmail.com',  # Set this from Database tab
-        'HOST': 'nwoemma.mysql.pythonanywhere-services.com',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'nwoemma$default',  # Format: username$dbname
+#         'USER': 'nwoemma',
+#         'PASSWORD': 'Emmy77@gmail.com',  # Set this from Database tab
+#         'HOST': 'nwoemma.mysql.pythonanywhere-services.com',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 ALLOWED_HOSTS = ["nwoemma.pythonanywhere.com","127.0.0.1"]
 DEBUG =False
 
@@ -63,6 +63,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+    "UPDATE_LAST_LOGIN": True,
 }
 CORS_ALLOW_METHODS = [
     'DELETE',
